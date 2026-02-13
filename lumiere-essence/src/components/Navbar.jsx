@@ -1,71 +1,98 @@
-import { Link, useLocation } from 'react-router-dom'
-import { ShoppingBag, User, Menu, X } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { ShoppingBag, User, Menu, X, Search, Heart } from 'lucide-react'
 import { useState } from 'react'
 
-export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false) // Para el menú de celular
-  const location = useLocation() // Para saber en qué página estamos
+import { useCart } from '../context/CartContext'
 
-  // Función para resaltar el link activo (si estás en Inicio se pone dorado)
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { totalItems } = useCart()
+
   const isActive = (path) => location.pathname === path
-    ? "text-accent font-medium border-b-2 border-accent"
+    ? "text-accent font-medium border-b border-accent"
     : "text-light hover:text-accent transition-colors duration-300"
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/catalog?search=${searchQuery}`)
+      setIsOpen(false)
+    }
+  }
 
   return (
     <nav className="bg-primary shadow-premium sticky top-0 z-50 border-b border-[#ffffff10]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="w-full px-4 sm:px-6 lg:px-12">
+        <div className="flex items-center justify-between h-20 md:h-24"> {/* Hicimos la barra un poco más alta (h-24 en PC) */}
           
-          {/* --- IZQUIERDA: LOGO --- */}
-          <div className="flex-shrink-0 flex items-center gap-3">
+          {/* --- IZQUIERDA: LOGO Y MARCA --- */}
+          <div className="flex items-center gap-4 w-1/3">
             <Link to="/">
-              {/* TRUCO: rounded-full hace el círculo y border-accent pone el anillo dorado */}
               <img 
-                className="h-12 w-12 rounded-full border-[2px] border-accent object-cover p-0.5 bg-white" 
+                className="h-14 w-14 md:h-16 md:w-16 rounded-full border-[2px] border-accent object-cover p-0.5 bg-white transition-transform hover:scale-105" 
                 src="/images/Logo.png" 
-                alt="Lumière Essence" 
+                alt="Lumière Essence Logo" 
               />
             </Link>
-            {/* Nombre de marca con fuente Serif elegante */}
-            <Link to="/" className="font-serif text-xl text-light tracking-widest hover:text-accent transition-colors hidden sm:block">
+            <Link to="/" className="font-serif text-base md:text-lg text-light tracking-[0.2em] hover:text-accent transition-colors hidden xl:block">
               LUMIÈRE ESSENCE
             </Link>
           </div>
 
-          {/* --- CENTRO: ENLACES (Solo PC) --- */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
-              <Link to="/" className={`px-3 py-2 text-sm tracking-widest ${isActive('/')}`}>
-                INICIO
+          {/* --- CENTRO: BUSCADOR --- */}
+          <div className="hidden md:flex flex-1 justify-center px-4 w-1/3">
+            <form onSubmit={handleSearch} className="relative w-full max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar Pato Pampa, Mito..."
+                className="w-full bg-[#ffffff05] border border-[#ffffff15] rounded-full py-2.5 pl-12 pr-4 text-light text-sm focus:outline-none focus:border-accent transition-all placeholder:text-gray-500"
+              />
+              <Search className="absolute left-4 top-3 text-gray-400" size={18} />
+            </form>
+          </div>
+
+          {/* --- DERECHA: ENLACES E ICONOS --- */}
+          <div className="flex items-center justify-end gap-6 md:gap-8 text-light w-1/3">
+            
+            {/* Links de navegación */}
+            <div className="hidden lg:flex items-center gap-8 mr-2">
+              <Link to="/" className={`text-xs tracking-[0.15em] uppercase pb-1 ${isActive('/')}`}>
+                Inicio
               </Link>
-              <Link to="/catalog" className={`px-3 py-2 text-sm tracking-widest ${isActive('/catalog')}`}>
-                CATÁLOGO
+              <Link to="/catalog" className={`text-xs tracking-[0.15em] uppercase pb-1 ${isActive('/catalog')}`}>
+                Catálogo
               </Link>
             </div>
-          </div>
 
-          {/* --- DERECHA: ICONOS --- */}
-          <div className="hidden md:flex items-center gap-6 text-light">
-            {/* Login */}
-            <Link to="/login" className="hover:text-accent transition-transform hover:scale-110 duration-300">
-              <User size={22} strokeWidth={1.5} />
-            </Link>
+            {/* Iconos de Acción (Agrandados a 24) */}
+            <div className="flex items-center gap-5 md:gap-6">
+              <Link to="/wishlist" className="hover:text-accent transition-transform hover:scale-110">
+                <Heart size={24} strokeWidth={1.5} />
+              </Link>
 
-             {/* Carrito */}
-            <Link to="/cart" className="group relative hover:text-accent transition-transform hover:scale-110 duration-300">
-              <ShoppingBag size={22} strokeWidth={1.5} />
-              {/* Burbuja Contadora Dorada */}
-              <span className="absolute -top-1.5 -right-1.5 bg-accent text-primary text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                0
-              </span>
-            </Link>
-          </div>
+              <Link to="/login" className="hover:text-accent transition-transform hover:scale-110">
+                <User size={24} strokeWidth={1.5} />
+              </Link>
 
-          {/* --- BOTÓN MENÚ CELULAR --- */}
-          <div className="flex md:hidden">
+              <Link to="/cart" className="group relative hover:text-accent transition-transform hover:scale-110">
+                <ShoppingBag size={24} strokeWidth={1.5} />
+                {totalItems > 0 && ( // Solo mostramos la burbuja si hay algo en el carrito
+                  <span className="absolute -top-2 -right-2 bg-accent text-primary text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md border border-primary">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+            </div>
+
+            {/* Botón Menú Hamburguesa */}
             <button 
               onClick={() => setIsOpen(!isOpen)} 
-              className="text-light hover:text-accent transition-colors"
+              className="lg:hidden text-light hover:text-accent ml-2"
             >
               {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -75,12 +102,23 @@ export default function Navbar() {
 
       {/* --- MENÚ DESPLEGABLE CELULAR --- */}
       {isOpen && (
-        <div className="md:hidden bg-primary border-t border-[#ffffff10] animate-pulse-fade">
-          <div className="px-4 pt-4 pb-6 space-y-2 flex flex-col items-center">
-            <Link to="/" onClick={() => setIsOpen(false)} className="text-light hover:text-accent py-2 tracking-widest">INICIO</Link>
-            <Link to="/catalog" onClick={() => setIsOpen(false)} className="text-light hover:text-accent py-2 tracking-widest">CATÁLOGO</Link>
-            <Link to="/cart" onClick={() => setIsOpen(false)} className="text-light hover:text-accent py-2 flex gap-2 items-center">
-              <ShoppingBag size={16} /> CARRITO
+        <div className="lg:hidden bg-primary border-t border-[#ffffff10] p-6 space-y-6 animate-pulse-fade">
+          <form onSubmit={handleSearch} className="relative w-full">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar perfume..."
+              className="w-full bg-[#ffffff08] border border-[#ffffff15] rounded-lg py-3 pl-12 text-light text-sm"
+            />
+            <Search className="absolute left-4 top-3.5 text-gray-500" size={20} />
+          </form>
+
+          <div className="flex flex-col items-start space-y-5 tracking-[0.15em] text-sm font-medium uppercase border-t border-[#ffffff10] pt-6">
+            <Link to="/" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Inicio</Link>
+            <Link to="/catalog" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Catálogo</Link>
+            <Link to="/wishlist" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full flex items-center gap-3">
+              <Heart size={18} /> Mis Favoritos
             </Link>
           </div>
         </div>

@@ -56,3 +56,18 @@ body {
     transform: translateY(0);
   }
 }
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  /* Se traslada exactamente la mitad (porque vamos a duplicar la lista) para que el loop sea infinito e invisible */
+  100% { transform: translateX(-50%); } 
+}
+
+.animate-scroll {
+  animation: scroll 40s linear infinite; 
+}
+
+/* Pausa la animación cuando el usuario pone el mouse encima */
+.animate-scroll:hover {
+  animation-play-state: paused;
+}

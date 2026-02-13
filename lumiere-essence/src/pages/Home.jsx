@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Hero from '../components/Hero'
 import ProductCard from '../components/ProductCard'
@@ -7,20 +8,20 @@ export default function Home() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Tu lista real y completa de marcas
+  const brands = [
+    'Adriana Costantini', 'Benito Fernández', 'India Style', 'Ishtar',
+    'Laca Laboratorio', 'Laurencio Adot', 'Lotus', 'Mimo & Co',
+    'Nasa', 'Ona Saez', 'Pato Pampa', 'Prototype', 'Vanesa', 'Yagmour'
+  ]
+
   useEffect(() => {
     async function getFeaturedProducts() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select(`
-            *,
-            product_variants (
-              price,
-              size_ml,
-              stock
-            )
-          `)
-          .limit(4)
+          .select(`*, product_variants ( price, size_ml, stock )`)
+          .limit(4) // <--- ACÁ ESTÁ EL CAMBIO: Limitado a 4 productos
         
         if (error) throw error
         setProducts(data)
@@ -30,67 +31,102 @@ export default function Home() {
         setLoading(false)
       }
     }
-
     getFeaturedProducts()
   }, [])
 
   return (
     <div className="bg-light min-h-screen">
-      {/* 1. Portada con tu frase de identidad */}
+      
+      {/* 1. HERO */}
       <Hero />
 
-      {/* 2. Sección de Productos Destacados */}
-      <section className="max-w-7xl mx-auto px-4 py-24">
-        <div className="text-center mb-16">
-          <span className="text-accent text-xs tracking-[0.4em] uppercase mb-3 block">
-            Selección de Autor
-          </span>
-          <h2 className="font-serif text-4xl md:text-5xl text-primary tracking-tight">
-            Los Favoritos
-          </h2>
-          <div className="h-px w-16 bg-accent/40 mx-auto mt-6"></div>
+      {/* 2. CINTA DE MARCAS (Infinite Marquee) */}
+      <section className="border-b border-gray-200 bg-white py-6 overflow-hidden relative">
+        <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+
+        <div className="flex w-max animate-scroll items-center">
+          {[...brands, ...brands].map((brand, i) => (
+            <div key={i} className="flex items-center px-6 md:px-10 opacity-60 hover:opacity-100 transition-opacity duration-300">
+              <span className="font-serif text-xl md:text-2xl text-primary tracking-wide whitespace-nowrap cursor-default">
+                {brand}
+              </span>
+              <span className="text-accent text-[10px] ml-12 md:ml-20">✦</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. SECCIÓN CURADA */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="max-w-2xl text-left">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="h-px w-8 bg-accent"></div>
+              <span className="text-accent text-xs tracking-[0.3em] uppercase font-medium">
+                Catálogo Principal
+              </span>
+            </div>
+            <h2 className="font-serif text-4xl md:text-5xl text-primary leading-tight">
+              Selección <span className="italic text-gray-500 font-light">Curada</span>
+            </h2>
+          </div>
+          
+          <Link to="/catalog" className="group flex items-center gap-3 text-primary text-xs tracking-widest uppercase border-b border-primary/30 pb-1 hover:text-accent hover:border-accent transition-all">
+            <span>Ver todas las fragancias</span>
+            <svg className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
 
         {loading ? (
-          // Spinner elegante mientras carga
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          <div className="flex justify-center items-center py-32">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-10 h-10 border-2 border-accent/20 border-t-accent rounded-full animate-spin"></div>
+              <span className="text-accent text-[10px] tracking-[0.3em] uppercase animate-pulse">Cargando colección...</span>
+            </div>
           </div>
         ) : (
-          // Grid de productos (mapeando tu DB)
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
             {products.length > 0 ? (
               products.map((perfume) => (
                 <ProductCard key={perfume.id} product={perfume} />
               ))
             ) : (
-              <div className="col-span-full text-center text-muted py-10">
-                Próximamente nuevas fragancias...
+              <div className="col-span-full text-center py-20">
+                <p className="text-gray-500 font-serif text-xl italic">Aún no hay fragancias cargadas en el catálogo.</p>
               </div>
             )}
           </div>
         )}
-
-        {/* Botón para ir al catálogo completo */}
-        <div className="text-center mt-20">
-          <button className="group relative text-primary font-medium tracking-widest text-xs uppercase overflow-hidden">
-            <span className="inline-block transition-transform duration-300 group-hover:-translate-y-full">Explorar Colección Completa</span>
-            <span className="absolute top-0 left-0 w-full h-full text-accent transition-transform duration-300 translate-y-full group-hover:translate-y-0">Ver todo el catálogo</span>
-            <div className="h-0.5 w-full bg-accent mt-1 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
-          </button>
-        </div>
       </section>
 
-      {/* 3. Sección de Cierre (Branding) */}
-      <section className="bg-primary py-32 px-4 border-t border-white/5">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="font-serif text-2xl md:text-3xl text-light italic leading-relaxed opacity-90">
-            "El lujo no es lo opuesto a la pobreza, sino a la vulgaridad."
-          </p>
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <div className="h-[1px] w-8 bg-accent/30"></div>
-            <span className="text-accent text-[10px] tracking-[0.3em] uppercase">Lumière Essence</span>
-            <div className="h-[1px] w-8 bg-accent/30"></div>
+      {/* 4. SOMMELIER VIRTUAL */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        <div className="relative bg-primary overflow-hidden w-full px-8 py-16 md:p-20 flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl">
+          <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+          
+          <div className="relative z-10 max-w-xl text-center md:text-left">
+            <span className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-5 block">Asistencia Inteligente</span>
+            <h3 className="font-serif text-3xl md:text-4xl text-light mb-4">
+              ¿Dudás sobre qué fragancia elegir?
+            </h3>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 font-light">
+              Dejá que nuestro <span className="text-light font-medium">Sommelier Virtual</span> te guíe. A través de nuestra IA, encontraremos la opción perfecta para tu estilo entre las mejores marcas del país.
+            </p>
+            <button className="px-8 py-3 border border-accent text-accent hover:bg-accent hover:text-primary transition-colors text-xs tracking-widest uppercase font-bold">
+              Iniciar Consulta
+            </button>
+          </div>
+
+          <div className="relative z-10 hidden md:flex items-center justify-center">
+            <div className="w-32 h-32 border border-accent/30 rounded-full flex items-center justify-center relative">
+              <div className="absolute inset-0 border border-accent/20 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+              <svg className="w-10 h-10 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
           </div>
         </div>
       </section>
