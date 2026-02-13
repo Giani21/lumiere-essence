@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+/* 1. Definimos los colores y fuentes como variables estándar de CSS */
+:root {
+  /* Paleta Lujo Francés */
+  --color-primary: #0F172A;  /* Azul Noche */
+  --color-accent: #D4AF37;   /* Dorado */
+  --color-light: #FAFAF9;    /* Marfil */
+  --color-muted: #9CA3AF;    /* Gris Suave */
+
+  /* Fuentes */
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+/* 2. Cremos las clases manualmente para usarlas en React 
+   Esto evita que tengas que configurar "themes" complejos */
+
+/* Fondos */
+.bg-primary { background-color: var(--color-primary); }
+.bg-accent  { background-color: var(--color-accent); }
+.bg-light   { background-color: var(--color-light); }
+
+/* Textos */
+.text-primary { color: var(--color-primary); }
+.text-accent  { color: var(--color-accent); }
+.text-light   { color: var(--color-light); }
+.text-muted   { color: var(--color-muted); }
+
+/* Bordes */
+.border-accent { border-color: var(--color-accent); }
+
+/* Fuentes */
+.font-serif { font-family: var(--font-serif); }
+.font-sans  { font-family: var(--font-sans); }
+
+/* Sombra Premium */
+.shadow-premium {
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
+}
+
+/* Estilos Globales */
+body {
+  background-color: var(--color-light);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
