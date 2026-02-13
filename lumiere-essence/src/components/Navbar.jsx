@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ShoppingBag, User, Menu, X, Search, Heart } from 'lucide-react'
+import { ShoppingBag, User, Menu, X, Search, Heart, Sparkles } from 'lucide-react' // Agregamos Sparkles
 import { useState } from 'react'
 
 import { useCart } from '../context/CartContext'
@@ -23,10 +23,16 @@ export default function Navbar() {
     }
   }
 
+  // FUNCIÓN PARA ABRIR EL CHAT DESDE CUALQUIER LADO
+  const openAIChat = () => {
+    window.dispatchEvent(new Event('open-ai-chat'));
+    setIsOpen(false); // Cerramos el menú mobile si estuviera abierto
+  }
+
   return (
     <nav className="bg-primary shadow-premium sticky top-0 z-50 border-b border-[#ffffff10]">
       <div className="w-full px-4 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-20 md:h-24"> {/* Hicimos la barra un poco más alta (h-24 en PC) */}
+        <div className="flex items-center justify-between h-20 md:h-24"> 
           
           {/* --- IZQUIERDA: LOGO Y MARCA --- */}
           <div className="flex items-center gap-4 w-1/3">
@@ -59,7 +65,6 @@ export default function Navbar() {
           {/* --- DERECHA: ENLACES E ICONOS --- */}
           <div className="flex items-center justify-end gap-6 md:gap-8 text-light w-1/3">
             
-            {/* Links de navegación */}
             <div className="hidden lg:flex items-center gap-8 mr-2">
               <Link to="/" className={`text-xs tracking-[0.15em] uppercase pb-1 ${isActive('/')}`}>
                 Inicio
@@ -69,8 +74,18 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Iconos de Acción (Agrandados a 24) */}
+            {/* Iconos de Acción */}
             <div className="flex items-center gap-5 md:gap-6">
+              {/* --- BOTÓN SOMMELIER IA --- */}
+              <button 
+                onClick={openAIChat}
+                className="hover:text-accent transition-transform hover:scale-110 flex flex-col items-center group"
+                title="Consultar Sommelier IA"
+              >
+                <Sparkles size={24} strokeWidth={1.5} className="group-hover:animate-pulse" />
+                <span className="text-[7px] uppercase tracking-tighter mt-1 hidden md:block opacity-50 group-hover:opacity-100">Sommelier</span>
+              </button>
+
               <Link to="/wishlist" className="hover:text-accent transition-transform hover:scale-110">
                 <Heart size={24} strokeWidth={1.5} />
               </Link>
@@ -81,7 +96,7 @@ export default function Navbar() {
 
               <Link to="/cart" className="group relative hover:text-accent transition-transform hover:scale-110">
                 <ShoppingBag size={24} strokeWidth={1.5} />
-                {totalItems > 0 && ( // Solo mostramos la burbuja si hay algo en el carrito
+                {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 bg-accent text-primary text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md border border-primary">
                     {totalItems}
                   </span>
@@ -117,6 +132,15 @@ export default function Navbar() {
           <div className="flex flex-col items-start space-y-5 tracking-[0.15em] text-sm font-medium uppercase border-t border-[#ffffff10] pt-6">
             <Link to="/" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Inicio</Link>
             <Link to="/catalog" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Catálogo</Link>
+            
+            {/* Sommelier en Mobile */}
+            <button 
+              onClick={openAIChat}
+              className="text-accent hover:text-light w-full flex items-center gap-3"
+            >
+              <Sparkles size={18} /> Sommelier Virtual IA
+            </button>
+
             <Link to="/wishlist" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full flex items-center gap-3">
               <Heart size={18} /> Mis Favoritos
             </Link>

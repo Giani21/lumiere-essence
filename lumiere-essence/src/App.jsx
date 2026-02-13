@@ -6,12 +6,13 @@ import Catalog from './pages/Catalog'
 import Cart from './pages/Cart'
 import ScrollToTop from './components/ScrollToTop'
 import Footer from './components/Footer'
+import SommelierChat from './components/SommelierChat'
+
 
 function App() {
   return (
     <div className="min-h-screen bg-light font-sans text-primary">
       <ScrollToTop />
-      
       <Navbar />
       
       <main>
@@ -25,6 +26,7 @@ function App() {
         </Routes>
       </main>
       
+      <SommelierChat />
       <Footer />
     </div>
   )
