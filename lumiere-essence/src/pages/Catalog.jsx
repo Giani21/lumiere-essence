@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useSearchParams } from 'react-router-dom' // <--- 1. Agregamos useSearchParams
 import { supabase } from '../lib/supabase'
 import ProductCard from '../components/ProductCard'
 import { ChevronRight, SlidersHorizontal, Search, X, ChevronDown } from 'lucide-react'
@@ -9,6 +9,9 @@ export default function Catalog() {
     const [filteredProducts, setFilteredProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const location = useLocation()
+
+    // 2. Hook para leer parámetros de la URL
+    const [searchParams, setSearchParams] = useSearchParams()
 
     // --- ESTADOS DE FILTROS ---
     const [searchQuery, setSearchQuery] = useState('')
@@ -24,6 +27,17 @@ export default function Catalog() {
     const audiences = ['Todas', 'Adolescentes / Kids', 'Femeninos', 'Masculinos']
     const types = ['Todas', 'Body Splash', 'Desodorante', 'Eau de cologne', 'Eau de parfum', 'Eau de toilette', 'Set de Regalos']
     const families = ['Todas', 'Oriental', 'Frutal', 'Floral', 'Amaderado', 'Cítrico']
+
+    // 3. EFECTO MAESTRO: Sincronizar URL con el Buscador Local
+    useEffect(() => {
+        const queryFromUrl = searchParams.get('search')
+        if (queryFromUrl) {
+            setSearchQuery(queryFromUrl)
+        } else {
+            // Si no hay nada en la URL (ej: clic en "Catálogo" limpio), limpiamos el buscador
+            setSearchQuery('')
+        }
+    }, [searchParams])
 
     useEffect(() => {
         async function fetchCatalog() {
@@ -61,6 +75,7 @@ export default function Catalog() {
 
         // Filtro por Precio (Variante más barata)
         result = result.filter(p => {
+            if (!p.product_variants || p.product_variants.length === 0) return false
             const minPrice = Math.min(...p.product_variants.map(v => v.price))
             return minPrice <= priceRange
         })
@@ -75,6 +90,17 @@ export default function Catalog() {
         setSelectedFamily('Todas')
         setSearchQuery('')
         setPriceRange(150000)
+        
+        // 4. Limpiamos también la URL para que no quede el ?search=viejo
+        setSearchParams({})
+    }
+
+    // Handler para cuando el usuario escribe en el input del sidebar
+    const handleLocalSearch = (e) => {
+        const val = e.target.value
+        setSearchQuery(val)
+        // Opcional: Si el usuario borra todo el texto, limpiamos el param de la URL
+        if (val === '') setSearchParams({})
     }
 
     return (
@@ -109,16 +135,23 @@ export default function Catalog() {
                                 type="text"
                                 placeholder="BUSCAR FRAGANCIA..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleLocalSearch} // Usamos el nuevo handler
                                 className="w-full bg-transparent py-2 pl-8 pr-4 text-[10px] tracking-widest uppercase focus:outline-none focus:border-accent transition-all placeholder:text-gray-400"
                             />
                             <Search className="absolute left-0 top-2.5 text-gray-400 group-focus-within:text-accent" size={16} />
+                            
+                            {/* Botón X para borrar rápido si hay texto */}
+                            {searchQuery && (
+                                <button onClick={() => { setSearchQuery(''); setSearchParams({}) }} className="absolute right-0 top-2.5 text-gray-400 hover:text-red-400">
+                                    <X size={14} />
+                                </button>
+                            )}
                         </div>
 
-                        {/* 2. FILTRO DE MARCA (El selector que buscabas) */}
+                        {/* 2. FILTRO DE MARCA */}
                         <div className="border-b border-gray-100 pb-6">
                             <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} // Reutilizamos un estado o creamos uno nuevo para el colapso
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="flex justify-between items-center w-full cursor-pointer group"
                             >
                                 <div className="flex flex-col text-left">
@@ -135,7 +168,7 @@ export default function Catalog() {
                                             key={brand}
                                             onClick={() => {
                                                 setSelectedBrand(brand);
-                                                setIsMobileMenuOpen(false); // Se cierra al elegir
+                                                setIsMobileMenuOpen(false);
                                             }}
                                             className={`text-left px-3 py-2 text-[10px] tracking-tight uppercase border transition-all cursor-pointer truncate ${selectedBrand === brand
                                                 ? 'border-accent text-accent font-bold bg-accent/5'
@@ -160,7 +193,7 @@ export default function Catalog() {
                                     type="number"
                                     min="0"
                                     placeholder="0.00"
-                                    value={priceRange === 150000 && products.length > 0 ? "" : priceRange} // Limpia el placeholder si es el default
+                                    value={priceRange === 150000 && products.length > 0 ? "" : priceRange}
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         setPriceRange(val === "" ? Infinity : Number(val));
@@ -173,7 +206,7 @@ export default function Catalog() {
                             </p>
                         </div>
 
-                        {/* 4. OTROS FILTROS (Compactos) */}
+                        {/* 4. OTROS FILTROS */}
                         <div className="space-y-6">
                             <FilterGroup title="Público" options={audiences} selected={selectedAudience} setSelected={setSelectedAudience} layout="chips" />
                             <FilterGroup title="Familia" options={families} selected={selectedFamily} setSelected={setSelectedFamily} layout="chips" />
@@ -216,6 +249,7 @@ export default function Catalog() {
     )
 }
 
+// ... FilterGroup se queda igual ...
 function FilterGroup({ title, options, selected, setSelected, layout }) {
     const [isOpen, setIsOpen] = useState(true);
 

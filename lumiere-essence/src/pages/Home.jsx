@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Hero from '../components/Hero'
 import ProductCard from '../components/ProductCard'
+import { Sparkles, MessageCircle } from 'lucide-react'
 
 export default function Home() {
   const [products, setProducts] = useState([])
@@ -21,7 +22,7 @@ export default function Home() {
         const { data, error } = await supabase
           .from('products')
           .select(`*, product_variants ( price, size_ml, stock )`)
-          .limit(4) // <--- ACÁ ESTÁ EL CAMBIO: Limitado a 4 productos
+          .limit(4) 
         
         if (error) throw error
         setProducts(data)
@@ -33,6 +34,11 @@ export default function Home() {
     }
     getFeaturedProducts()
   }, [])
+
+  // FUNCIÓN PARA ABRIR EL CHAT
+  const openAIChat = () => {
+    window.dispatchEvent(new Event('open-ai-chat'));
+  }
 
   return (
     <div className="bg-light min-h-screen">
@@ -104,29 +110,43 @@ export default function Home() {
 
       {/* 4. SOMMELIER VIRTUAL */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-        <div className="relative bg-primary overflow-hidden w-full px-8 py-16 md:p-20 flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl">
+        <div className="relative bg-primary overflow-hidden w-full px-8 py-16 md:p-20 flex flex-col md:flex-row items-center justify-between gap-12 shadow-2xl rounded-sm group hover:shadow-accent/10 transition-shadow duration-500">
+          
+          {/* Fondo decorativo */}
           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-accent/10 via-transparent to-transparent opacity-60 pointer-events-none"></div>
           
           <div className="relative z-10 max-w-xl text-center md:text-left">
-            <span className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-5 block">Asistencia Inteligente</span>
-            <h3 className="font-serif text-3xl md:text-4xl text-light mb-4">
+            <span className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-5 flex items-center justify-center md:justify-start gap-2">
+              <Sparkles size={14} /> Asistencia Inteligente
+            </span>
+            <h3 className="font-serif text-3xl md:text-4xl text-light mb-4 leading-tight">
               ¿Dudás sobre qué fragancia elegir?
             </h3>
-            <p className="text-gray-400 text-sm leading-relaxed mb-8 font-light">
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 font-light max-w-lg mx-auto md:mx-0">
               Dejá que nuestro <span className="text-light font-medium">Sommelier Virtual</span> te guíe. A través de nuestra IA, encontraremos la opción perfecta para tu estilo entre las mejores marcas del país.
             </p>
-            <button className="px-8 py-3 border border-accent text-accent hover:bg-accent hover:text-primary transition-colors text-xs tracking-widest uppercase font-bold">
-              Iniciar Consulta
+            
+            {/* BOTÓN QUE ABRE EL CHAT */}
+            <button 
+              onClick={openAIChat}
+              className="px-8 py-4 border border-accent text-accent hover:bg-accent hover:text-primary transition-all duration-300 text-xs tracking-widest uppercase font-bold cursor-pointer relative overflow-hidden group/btn"
+            >
+              <span className="relative z-10">Iniciar Consulta</span>
+              {/* Efecto de brillo al hover */}
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover/btn:animate-[shine_1s_ease-in-out]"></div>
             </button>
           </div>
 
           <div className="relative z-10 hidden md:flex items-center justify-center">
-            <div className="w-32 h-32 border border-accent/30 rounded-full flex items-center justify-center relative">
+            {/* Icono animado */}
+            <button 
+              onClick={openAIChat}
+              className="w-32 h-32 border border-accent/30 rounded-full flex items-center justify-center relative hover:scale-105 transition-transform duration-500 cursor-pointer group/circle"
+            >
               <div className="absolute inset-0 border border-accent/20 rounded-full animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-              <svg className="w-10 h-10 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-            </div>
+              <div className="absolute inset-0 bg-accent/5 rounded-full scale-0 group-hover/circle:scale-100 transition-transform duration-500"></div>
+              <MessageCircle className="w-10 h-10 text-accent group-hover/circle:rotate-12 transition-transform duration-500" strokeWidth={1} />
+            </button>
           </div>
         </div>
       </section>

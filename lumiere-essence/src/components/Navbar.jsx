@@ -1,15 +1,18 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ShoppingBag, User, Menu, X, Search, Heart, Sparkles } from 'lucide-react' // Agregamos Sparkles
-import { useState } from 'react'
+import { ShoppingBag, User, Menu, X, Search, Heart, Sparkles, LogOut } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext' // <--- 1. IMPORTAMOS EL CONTEXTO
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const location = useLocation()
   const navigate = useNavigate()
+  
   const { totalItems } = useCart()
+  const { user, signOut } = useAuth() // <--- 2. EXTRAEMOS USER Y SIGNOUT
 
   const isActive = (path) => location.pathname === path
     ? "text-accent font-medium border-b border-accent"
@@ -26,7 +29,14 @@ export default function Navbar() {
   // FUNCIÓN PARA ABRIR EL CHAT DESDE CUALQUIER LADO
   const openAIChat = () => {
     window.dispatchEvent(new Event('open-ai-chat'));
-    setIsOpen(false); // Cerramos el menú mobile si estuviera abierto
+    setIsOpen(false);
+  }
+
+  // Función para cerrar sesión y cerrar menú
+  const handleSignOut = async () => {
+    await signOut();
+    setIsOpen(false);
+    navigate('/');
   }
 
   return (
@@ -76,10 +86,11 @@ export default function Navbar() {
 
             {/* Iconos de Acción */}
             <div className="flex items-center gap-5 md:gap-6">
-              {/* --- BOTÓN SOMMELIER IA --- */}
+              
+              {/* BOTÓN SOMMELIER IA */}
               <button 
                 onClick={openAIChat}
-                className="hover:text-accent transition-transform hover:scale-110 flex flex-col items-center group"
+                className="hover:text-accent transition-transform hover:scale-110 flex flex-col items-center group cursor-pointer"
                 title="Consultar Sommelier IA"
               >
                 <Sparkles size={24} strokeWidth={1.5} className="group-hover:animate-pulse" />
@@ -90,9 +101,46 @@ export default function Navbar() {
                 <Heart size={24} strokeWidth={1.5} />
               </Link>
 
-              <Link to="/login" className="hover:text-accent transition-transform hover:scale-110">
-                <User size={24} strokeWidth={1.5} />
-              </Link>
+              {/* --- 3. LÓGICA DE USUARIO (LOGIN / AVATAR) --- */}
+              {user ? (
+                <div className="relative group z-50">
+                  {/* Avatar o Iniciales */}
+                  <button className="flex items-center gap-2 hover:text-accent transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 text-accent border border-accent flex items-center justify-center text-[10px] font-bold">
+                       {/* Tomamos la inicial del email o nombre */}
+                       {user.user_metadata?.full_name 
+                         ? user.user_metadata.full_name.charAt(0).toUpperCase() 
+                         : user.email?.charAt(0).toUpperCase()}
+                    </div>
+                  </button>
+                  
+                  {/* Dropdown Menu (Logout) */}
+                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl border border-gray-100 rounded-sm py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right">
+                    <div className="px-4 py-3 border-b border-gray-50">
+                      <p className="text-[9px] text-gray-400 uppercase tracking-wider mb-1">Bienvenido,</p>
+                      <p className="text-xs text-primary font-bold truncate">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                    </div>
+                    
+                    <Link to="/cart" className="block w-full text-left px-4 py-2 text-xs text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                      Mis Pedidos
+                    </Link>
+
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-xs text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors flex items-center gap-2"
+                    >
+                      <LogOut size={14} /> Cerrar Sesión
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Si NO está logueado */
+                <Link to="/login" className="hover:text-accent transition-transform hover:scale-110">
+                  <User size={24} strokeWidth={1.5} />
+                </Link>
+              )}
 
               <Link to="/cart" className="group relative hover:text-accent transition-transform hover:scale-110">
                 <ShoppingBag size={24} strokeWidth={1.5} />
@@ -130,10 +178,23 @@ export default function Navbar() {
           </form>
 
           <div className="flex flex-col items-start space-y-5 tracking-[0.15em] text-sm font-medium uppercase border-t border-[#ffffff10] pt-6">
+            
+            {/* Si está logueado, mostramos info del usuario en mobile */}
+            {user && (
+              <div className="w-full pb-4 border-b border-[#ffffff10] mb-2 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent text-primary flex items-center justify-center font-bold text-xs">
+                   {user.email?.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-400">Hola,</span>
+                  <span className="text-light text-xs normal-case">{user.user_metadata?.full_name || user.email}</span>
+                </div>
+              </div>
+            )}
+
             <Link to="/" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Inicio</Link>
             <Link to="/catalog" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full">Catálogo</Link>
             
-            {/* Sommelier en Mobile */}
             <button 
               onClick={openAIChat}
               className="text-accent hover:text-light w-full flex items-center gap-3"
@@ -144,6 +205,24 @@ export default function Navbar() {
             <Link to="/wishlist" onClick={() => setIsOpen(false)} className="text-light hover:text-accent w-full flex items-center gap-3">
               <Heart size={18} /> Mis Favoritos
             </Link>
+
+            {/* Botón de Login/Logout en Mobile */}
+            {user ? (
+               <button 
+                 onClick={handleSignOut} 
+                 className="text-red-400 hover:text-red-300 w-full flex items-center gap-3 border-t border-[#ffffff10] pt-4 mt-2"
+               >
+                 <LogOut size={18} /> Cerrar Sesión
+               </button>
+            ) : (
+               <Link 
+                 to="/login" 
+                 onClick={() => setIsOpen(false)} 
+                 className="text-light hover:text-accent w-full flex items-center gap-3 border-t border-[#ffffff10] pt-4 mt-2"
+               >
+                 <User size={18} /> Iniciar Sesión
+               </Link>
+            )}
           </div>
         </div>
       )}
