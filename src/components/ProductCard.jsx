@@ -83,17 +83,18 @@ export default function ProductCard({ product }) {
         </p>
 
         <div className="mt-auto pt-4 border-t border-gray-50 flex flex-col gap-4">
-          <span className="text-primary font-serif text-xl">
-            ${minPrice.toLocaleString('es-AR')}
-          </span>
+        <span className="text-primary font-serif text-xl">
+          ${minPrice.toLocaleString('es-AR')}
+        </span>
 
-          <Link 
-            to={`/product/${product.id}`}
-            className="w-full py-3 bg-primary text-light text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-accent hover:text-primary transition-all duration-300"
-          >
-            Ver Detalle
-          </Link>
-        </div>
+        {/* FIX: Cambiado de product.id a product.slug */}
+        <Link 
+          to={`/product/${product.slug}`}
+          className="w-full py-3 bg-primary text-light text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-accent hover:text-primary transition-all duration-300"
+        >
+          Ver Detalle
+        </Link>
+      </div>
       </div>
     </div>
   )

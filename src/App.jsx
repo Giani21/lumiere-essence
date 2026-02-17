@@ -19,6 +19,8 @@ import NotFound from './pages/NotFound'
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './layout/AdminLayout'
 import AdminProducts from './pages/admin/AdminProducts'
+import AuthRedirect from './components/AuthRedirect'
+import NewProduct from './pages/admin/NewProduct'
 
 function App() {
   const location = useLocation()
@@ -44,7 +46,11 @@ function App() {
   return (
     <div className="min-h-screen bg-light font-sans text-primary flex flex-col">
       <ScrollToTop />
-      
+      <AuthRedirect />
+
+      {/* El Chat y Footer públicos se ocultan en /admin */}
+      {!shouldHideLayout && <SommelierChat />}
+
       {/* El Navbar público se oculta en /admin */}
       {!shouldHideLayout && <Navbar />}
       
@@ -67,6 +73,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<div className="p-4"><h1>Dashboard Principal</h1></div>} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="products/new" element={<NewProduct />} />
             </Route>
           </Route>
 
