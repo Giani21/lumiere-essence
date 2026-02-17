@@ -1,94 +1,113 @@
-import { useLocation } from 'react-router-dom'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
+
+// COMPONENTES GLOBALES
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
+import SommelierChat from './components/SommelierChat'
+import AuthRedirect from './components/AuthRedirect'
+
+// PÁGINAS PÚBLICAS
 import Home from './pages/Home'
+import Catalog from './pages/Catalog'
+import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import Wishlist from './pages/Wishlist'
+
+// PÁGINAS DE AUTH
 import Login from './pages/Login'
 import Register from './pages/Register'
-import ProductDetail from './pages/ProductDetail'
-import Catalog from './pages/Catalog'
-import Cart from './pages/Cart'
-import ScrollToTop from './components/ScrollToTop'
-import Footer from './components/Footer'
-import SommelierChat from './components/SommelierChat'
 import ForgotPassword from './pages/ForgotPassword'
 import UpdatePassword from './pages/UpdatePassword'
-import Wishlist from './pages/Wishlist'
+
+// PÁGINAS LEGALES
+import Terms from './pages/legal/Terms'
+import Privacy from './pages/legal/Privacy'
+import Returns from './pages/legal/Returns'
+import FAQ from './pages/legal/FAQ'
+
+// PÁGINAS DE ERROR
 import NotFound from './pages/NotFound'
 
-// --- 1. IMPORTS DE ADMIN
+// ADMIN IMPORTS
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './layout/AdminLayout'
+import Dashboard from './pages/admin/Dashboard'
 import AdminProducts from './pages/admin/AdminProducts'
-import AuthRedirect from './components/AuthRedirect'
 import NewProduct from './pages/admin/NewProduct'
 import AdminOrders from './pages/admin/AdminOrders'
-import Dashboard from './pages/admin/Dashboard'
+
+// --- LAYOUTS INTERNOS ---
+
+// 1. Layout Público: Muestra Navbar, Footer y Chat
+const PublicLayout = () => {
+  return (
+    <>
+      <Navbar />
+      <main className="flex-grow">
+        <Outlet /> {/* Aquí se renderiza el contenido de la página */}
+      </main>
+      <SommelierChat />
+      <Footer />
+    </>
+  )
+}
+
+// 2. Layout Auth/Simple: Centrado, sin Navbar ni Footer
+const SimpleLayout = () => {
+  return (
+    <main className="flex-grow flex flex-col justify-center min-h-[80vh]">
+      <Outlet />
+    </main>
+  )
+}
 
 function App() {
-  const location = useLocation()
-  
-  // Detectamos si estamos en zona admin para ocultar el Navbar público
-  const isAdminPath = location.pathname.startsWith('/admin');
-
-  // Páginas de Auth y Error explícitas
-  const authPaths = ['/login', '/register', '/forgot-password', '/update-password', '/404'];
-  const isAuthPage = authPaths.includes(location.pathname);
-
-  // Agregamos '/admin' a las rutas conocidas para que no se rompa la lógica, 
-  // aunque isAdminPath ya se encarga de ocultar el layout.
-  const knownPaths = ['/', '/catalog', '/cart', '/wishlist', ...authPaths];
-  
-  const isUnknownPath = !knownPaths.includes(location.pathname) && 
-                        !location.pathname.startsWith('/product/') &&
-                        !isAdminPath; // Excluimos admin de "unknown" para controlarlo nosotros
-
-  // Ocultamos el Layout público si es Auth, Error, Desconocido O Admin
-  const shouldHideLayout = isAuthPage || isUnknownPath || isAdminPath;
-
   return (
     <div className="min-h-screen bg-light font-sans text-primary flex flex-col">
       <ScrollToTop />
       <AuthRedirect />
 
-      {/* El Chat y Footer públicos se ocultan en /admin */}
-      {!shouldHideLayout && <SommelierChat />}
-
-      {/* El Navbar público se oculta en /admin */}
-      {!shouldHideLayout && <Navbar />}
-      
-      <main className="flex-grow">
-        <Routes>
-          {/* RUTAS PÚBLICAS */}
+      <Routes>
+        
+        {/* === ZONA 1: PÚBLICA (Con Navbar y Footer) === */}
+        <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/update-password" element={<UpdatePassword />} />
-          
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          
+          {/* Legales */}
+          <Route path="/legal/terms" element={<Terms />} />
+          <Route path="/legal/privacy" element={<Privacy />} />
+          <Route path="/legal/returns" element={<Returns />} />
+          <Route path="/legal/faq" element={<FAQ />} />
+        </Route>
 
-          {/* --- 2. RUTAS DE ADMIN PROTEGIDAS --- */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} /> 
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="products/new" element={<NewProduct />} />
-              <Route path="products/edit/:id" element={<NewProduct />} />
-              <Route path="orders" element={<AdminOrders />} />
-            </Route>
-          </Route>
 
-          {/* RUTA 404 */}
+        {/* === ZONA 2: AUTH & ERRORES (Sin Navbar/Footer) === */}
+        <Route element={<SimpleLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      
-      {/* El Chat y Footer públicos se ocultan en /admin */}
-      {!shouldHideLayout && <SommelierChat />}
-      {!shouldHideLayout && <Footer />}
+        </Route>
+
+
+        {/* === ZONA 3: ADMIN (Protegida y con su propio Layout) === */}
+        <Route path="/admin" element={<AdminRoute />}> {/* Primero verifica seguridad */}
+          <Route element={<AdminLayout />}>            {/* Luego aplica diseño admin */}
+            <Route index element={<Dashboard />} /> 
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="products/new" element={<NewProduct />} />
+            <Route path="products/edit/:id" element={<NewProduct />} />
+            <Route path="orders" element={<AdminOrders />} />
+          </Route>
+        </Route>
+
+      </Routes>
     </div>
   )
 }

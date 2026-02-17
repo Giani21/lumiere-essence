@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Instagram, Mail, Phone, MessageCircle, Loader, Check, AlertCircle } from 'lucide-react'
+import { Instagram, Mail, Phone, MessageCircle, Loader, Check, AlertCircle, Shield } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 export default function Footer() {
@@ -8,7 +8,7 @@ export default function Footer() {
   
   // Estados del formulario
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState('idle') 
   const [feedbackMsg, setFeedbackMsg] = useState('')
 
   const handleSubscribe = async (e) => {
@@ -19,13 +19,11 @@ export default function Footer() {
     setFeedbackMsg('')
 
     try {
-      // Intentamos guardar el email en la tabla nueva
       const { error } = await supabase
         .from('newsletter_subscribers')
         .insert({ email })
 
       if (error) {
-        // Código 23505 significa "Violación de unicidad" (El email ya existe)
         if (error.code === '23505') {
           setStatus('error')
           setFeedbackMsg('¡Ya eres parte del club!')
@@ -35,15 +33,13 @@ export default function Footer() {
       } else {
         setStatus('success')
         setFeedbackMsg('¡Bienvenido al Club de Fragancias!')
-        setEmail('') // Limpiamos el campo
+        setEmail('') 
       }
-
     } catch (error) {
       console.error(error)
       setStatus('error')
       setFeedbackMsg('Hubo un error. Intenta nuevamente.')
     } finally {
-      // Opcional: Volver a estado normal después de unos segundos
       setTimeout(() => {
         if (status === 'success') setStatus('idle')
       }, 5000)
@@ -68,7 +64,6 @@ export default function Footer() {
           
           <div className="w-full max-w-md lg:ml-auto">
             <form onSubmit={handleSubscribe} className={`relative flex items-center border-b transition-colors duration-500 pb-2 ${status === 'error' ? 'border-red-400' : status === 'success' ? 'border-green-500' : 'border-gray-600 focus-within:border-accent'}`}>
-              
               <input 
                 type="email" 
                 value={email}
@@ -78,7 +73,6 @@ export default function Footer() {
                 required
                 disabled={status === 'loading' || status === 'success'}
               />
-              
               <button 
                 type="submit" 
                 disabled={status === 'loading' || status === 'success'}
@@ -93,8 +87,6 @@ export default function Footer() {
                 )}
               </button>
             </form>
-            
-            {/* Mensaje de Feedback (Sutil abajo del input) */}
             {feedbackMsg && (
               <p className={`absolute mt-2 text-[10px] tracking-wide flex items-center gap-1 ${status === 'error' ? 'text-red-400' : 'text-green-500'}`}>
                 {status === 'error' && <AlertCircle size={10} />}
@@ -118,19 +110,14 @@ export default function Footer() {
               <span className="font-serif text-sm tracking-[0.2em] uppercase">Lumière Essence</span>
             </Link>
             <p className="text-gray-400 text-xs leading-relaxed pr-4">
-              La boutique multimarca definitiva. Curaduría de las mejores fragancias nacionales.
+              La boutique multimarca definitiva. Curaduría de las mejores fragancias nacionales e internacionales.
             </p>
           </div>
 
-          {/* Columna 2: Navegación */}
+          {/* Columna 2: Navegación Principal */}
           <div className="flex flex-col gap-5">
-            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2">Boutique</h4>
+            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2 text-white">Boutique</h4>
             <Link to="/catalog" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Ver Catálogo</Link>
-          </div>
-
-          {/* Columna 3: Atención al Cliente */}
-          <div className="flex flex-col gap-5">
-            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2">Asistencia</h4>
             <Link to="/wishlist" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Mis Favoritos</Link>
             <button 
               onClick={() => window.dispatchEvent(new Event('open-ai-chat'))}
@@ -140,38 +127,53 @@ export default function Footer() {
             </button>
           </div>
 
+          {/* Columna 3: Información Legal (NUEVA) */}
+          <div className="flex flex-col gap-5">
+            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2 text-white">Información Legal</h4>
+            <Link to="/legal/faq" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Preguntas Frecuentes</Link>
+            <Link to="/legal/returns" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Cambios y Devoluciones</Link>
+            <Link to="/legal/terms" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Términos y Condiciones</Link>
+            <Link to="/legal/privacy" className="text-gray-400 hover:text-accent text-xs tracking-widest uppercase transition-colors w-fit">Privacidad</Link>
+          </div>
+
           {/* Columna 4: Contacto */}
           <div className="flex flex-col gap-5">
-            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2">Contacto</h4>
+            <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2 text-white">Contacto</h4>
             <a href="mailto:contacto@lumiere.com" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
-              <Mail size={16} /> contacto@lumiere.com
+              <Mail size={16} strokeWidth={1.5} /> contacto@lumiere.com
             </a>
             <a href="https://wa.me/5491100000000" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
-              <Phone size={16} /> +54 9 11 0000-0000
+              <Phone size={16} strokeWidth={1.5} /> +54 9 11 0000-0000
             </a>
             
-            <div className="flex items-center gap-4 mt-4">
-              <a href="#" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all">
-                <Instagram size={14} />
+            <div className="flex items-center gap-4 mt-2">
+              <a href="#" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all group">
+                <Instagram size={14} className="group-hover:scale-110 transition-transform" />
               </a>
-              <a href="https://wa.me/5491100000000" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all" title="WhatsApp">
-                <MessageCircle size={14} />
+              <a href="https://wa.me/5491100000000" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all group" title="WhatsApp">
+                <MessageCircle size={14} className="group-hover:scale-110 transition-transform" />
               </a>
             </div>
           </div>
 
         </div>
 
-        {/* --- BOTTOM SECTION: LEGAL --- */}
-        <div className="border-t border-[#ffffff10] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 text-[10px] tracking-widest uppercase">
-            © {currentYear} Lumière Essence. Todos los derechos reservados.
+        {/* --- BOTTOM SECTION: COMPLIANCE --- */}
+        <div className="border-t border-[#ffffff10] pt-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-gray-500 text-[9px] tracking-[0.2em] uppercase">
+            © {currentYear} Lumière Essence. <span className="hidden sm:inline">Todos los derechos reservados.</span>
           </p>
           
-          <div className="flex items-center gap-4 text-gray-500 text-[10px] tracking-widest uppercase">
-            <span>Pagos Seguros</span>
-            <div className="h-3 w-px bg-gray-600"></div>
-            <span>Mercado Pago</span>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+               <span className="text-gray-500 text-[9px] tracking-widest uppercase">Secured by</span>
+               <span className="text-light font-bold text-xs">Mercado Pago</span>
+            </div>
+            <div className="h-4 w-px bg-gray-800"></div>
+            <div className="flex items-center gap-2 text-gray-600">
+               <Shield size={12} />
+               <span className="text-[9px] tracking-widest uppercase">Sitio Seguro SSL</span>
+            </div>
           </div>
         </div>
 
