@@ -15,12 +15,14 @@ import UpdatePassword from './pages/UpdatePassword'
 import Wishlist from './pages/Wishlist'
 import NotFound from './pages/NotFound'
 
-// --- 1. IMPORTS DE ADMIN (Ajustá las rutas si los guardaste en carpetas distintas) ---
+// --- 1. IMPORTS DE ADMIN
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './layout/AdminLayout'
 import AdminProducts from './pages/admin/AdminProducts'
 import AuthRedirect from './components/AuthRedirect'
 import NewProduct from './pages/admin/NewProduct'
+import AdminOrders from './pages/admin/AdminOrders'
+import Dashboard from './pages/admin/Dashboard'
 
 function App() {
   const location = useLocation()
@@ -71,9 +73,11 @@ function App() {
           {/* --- 2. RUTAS DE ADMIN PROTEGIDAS --- */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<div className="p-4"><h1>Dashboard Principal</h1></div>} />
+              <Route index element={<Dashboard />} /> 
               <Route path="products" element={<AdminProducts />} />
               <Route path="products/new" element={<NewProduct />} />
+              <Route path="products/edit/:id" element={<NewProduct />} />
+              <Route path="orders" element={<AdminOrders />} />
             </Route>
           </Route>
 
