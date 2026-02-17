@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Mail, Lock, Loader, ArrowRight } from 'lucide-react'
+import { Mail, Lock, Loader } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -10,19 +10,67 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState(null)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    // 1. Escuchar cambios de estado en tiempo real
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Evento SIGNED_IN ocurre cuando Google termina de redirigir y procesar el token
+      if (event === 'SIGNED_IN' && session) {
+        console.log("✅ Login detectado (Google o Email), verificando rol...")
+        await checkRoleAndRedirect(session.user.id)
+      }
+    })
+
+    // 2. Limpieza al desmontar
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [])
+
+  // --- FUNCIÓN HELPER PARA DECIDIR EL DESTINO ---
+  const checkRoleAndRedirect = async (userId) => {
+    try {
+      // Consultamos el rol en la base de datos
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      
+      if (error) throw error
+
+      // EL GRAN FILTRO:
+      if (profile?.role === 'admin') {
+        console.log("👮‍♂️ Admin detectado. Redirigiendo al panel...")
+        navigate('/admin', { replace: true })
+      } else {
+        console.log("👤 Cliente detectado. Redirigiendo a la tienda...")
+        navigate('/', { replace: true })
+      }
+
+    } catch (error) {
+      console.error("Error verificando rol:", error)
+      // En caso de duda (o error de red), lo mandamos al home por seguridad
+      navigate('/') 
+    }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
     setErrorMsg(null)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      // 1. Intentamos loguear
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-      navigate('/') // Redirigir al home o dashboard
+
+      // 2. Si pasa, verificamos el rol antes de redirigir
+      await checkRoleAndRedirect(data.user.id)
+
     } catch (error) {
+      console.error(error)
       setErrorMsg('Credenciales inválidas. Por favor verifique sus datos.')
-    } finally {
-      setLoading(false)
+      setLoading(false) // Solo bajamos el loading si hubo error, si no, esperamos al redirect
     }
   }
 
@@ -31,7 +79,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin // Vuelve a la misma página post-login
+          redirectTo: window.location.origin // Vuelve a esta misma URL para que el useEffect lo capture
         }
       })
       if (error) throw error
@@ -74,6 +122,7 @@ export default function Login() {
 
           {/* BOTÓN GOOGLE */}
           <button 
+            type="button" // Importante: type button para que no envíe el form
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 py-3 rounded-sm hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group"
           >
@@ -132,7 +181,7 @@ export default function Login() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-primary text-light py-3 uppercase tracking-[0.2em] text-xs font-bold hover:bg-accent hover:text-primary transition-all duration-300 flex items-center justify-center gap-2"
+              className="w-full bg-primary text-light py-3 uppercase tracking-[0.2em] text-xs font-bold hover:bg-accent hover:text-primary transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? <Loader className="animate-spin" size={16} /> : 'Ingresar'}
             </button>

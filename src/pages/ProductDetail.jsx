@@ -5,14 +5,16 @@ import { ShoppingBag, Heart, ChevronRight, Ruler, Truck, ShieldCheck, Check } fr
 import { useCart } from '../context/CartContext'
 
 export default function ProductDetail() {
-  const { id } = useParams()
+  // 1. CAMBIO: Leemos 'slug' en lugar de 'id'
+  const { slug } = useParams()
+  
   const [product, setProduct] = useState(null)
   const [variants, setVariants] = useState([])
   const [selectedVariant, setSelectedVariant] = useState(null)
   const [loading, setLoading] = useState(true)
   
-  // Estado para manejar la notificación (Toast)
   const [showToast, setShowToast] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(false)
   
   const { addToCart } = useCart()
 
@@ -31,7 +33,7 @@ export default function ProductDetail() {
               sku
             )
           `)
-          .eq('id', id)
+          .eq('slug', slug) // 2. CAMBIO: Buscamos por slug
           .single()
 
         if (error) throw error
@@ -43,6 +45,10 @@ export default function ProductDetail() {
           if (sortedVariants.length > 0) {
             setSelectedVariant(sortedVariants[0])
           }
+
+          // 3. CAMBIO: Chequeamos wishlist usando el ID real recuperado de la DB
+          const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
+          setIsWishlisted(wishlist.some(item => item.id === data.id))
         }
       } catch (error) {
         console.error('Error cargando producto:', error.message)
@@ -51,15 +57,42 @@ export default function ProductDetail() {
       }
     }
 
-    if (id) getProductDetail()
-  }, [id])
+    if (slug) {
+      getProductDetail()
+    }
+  }, [slug]) // 4. CAMBIO: Dependencia del efecto es el slug
 
-  // Función envoltorio para agregar al carrito y mostrar el Toast
+  // Lógica de Wishlist
+  const toggleWishlist = () => {
+    if (!product) return
+
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
+    let updatedWishlist
+
+    // Usamos product.id para la lógica interna (es lo más seguro)
+    if (isWishlisted) {
+      updatedWishlist = wishlist.filter(item => item.id !== product.id)
+      setIsWishlisted(false)
+    } else {
+      const wishItem = {
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        image_url: product.image_url,
+        price: selectedVariant?.price,
+        slug: product.slug // 5. CAMBIO: Guardamos el slug para futuros links
+      }
+      updatedWishlist = [...wishlist, wishItem]
+      setIsWishlisted(true)
+    }
+
+    localStorage.setItem('wishlist', JSON.stringify(updatedWishlist))
+  }
+
   const handleAddToCart = () => {
     addToCart(product, selectedVariant)
     setShowToast(true)
     
-    // Oculta la notificación automáticamente después de 3 segundos
     setTimeout(() => {
       setShowToast(false)
     }, 3000)
@@ -86,7 +119,7 @@ export default function ProductDetail() {
   return (
     <div className="bg-light min-h-screen pt-24 pb-32 relative">
       
-      {/* --- TOAST NOTIFICATION (Flotante) --- */}
+      {/* --- TOAST NOTIFICATION --- */}
       <div 
         className={`fixed top-24 right-4 sm:right-12 z-50 bg-primary border border-accent/30 text-light px-6 py-4 shadow-2xl flex items-center gap-4 transform transition-all duration-500 ease-out ${
           showToast ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0 pointer-events-none'
@@ -122,7 +155,7 @@ export default function ProductDetail() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
           
-          {/* --- IZQUIERDA: IMAGEN (Sticky) --- */}
+          {/* --- IZQUIERDA: IMAGEN --- */}
           <div className="relative">
             <div className="md:sticky md:top-32 aspect-[4/5] bg-gray-50 overflow-hidden shadow-premium">
               <img 
@@ -140,7 +173,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* --- DERECHA: DETALLES Y COMPRA --- */}
+          {/* --- DERECHA: DETALLES --- */}
           <div className="flex flex-col justify-center py-6">
             
             <h3 className="text-accent text-xs tracking-[0.4em] uppercase font-bold mb-3">
@@ -195,25 +228,35 @@ export default function ProductDetail() {
 
             <div className="mb-12">
               <p className="text-gray-600 text-sm leading-relaxed font-light">
-                {product.description || 'Una fragancia inolvidable que define tu presencia. Creada con las notas más exclusivas para perdurar en el tiempo y dejar una estela inconfundible.'}
+                {product.description || 'Una fragancia inolvidable que define tu presencia.'}
               </p>
             </div>
 
+            {/* --- ACCIONES --- */}
             <div className="flex gap-4 mb-12">
-            <button 
+              <button 
                 onClick={handleAddToCart}
                 disabled={!selectedVariant || selectedVariant.stock === 0}
                 className="relative flex-1 bg-primary text-light overflow-hidden flex items-center justify-center gap-3 py-4 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.2em] text-xs uppercase disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer group active:scale-[0.98]"
-                >
-                {/* Animación de brillo (Shine) */}
+              >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]"></div>
-                
                 <span className="relative z-10">Añadir al Carrito</span>
                 <ShoppingBag size={16} className="relative z-10 group-hover:scale-110 transition-transform" />
-            </button>
+              </button>
               
-              <button className="w-14 flex items-center justify-center border border-gray-200 text-gray-400 hover:border-accent hover:text-accent transition-colors">
-                <Heart size={20} strokeWidth={1.5} />
+              <button 
+                onClick={toggleWishlist}
+                className={`w-14 flex items-center justify-center border transition-all duration-300 ${
+                  isWishlisted 
+                    ? 'bg-red-50 border-red-200 text-red-500' 
+                    : 'border-gray-200 text-gray-400 hover:border-accent hover:text-accent'
+                }`}
+              >
+                <Heart 
+                  size={20} 
+                  strokeWidth={1.5} 
+                  fill={isWishlisted ? "currentColor" : "none"} 
+                />
               </button>
             </div>
 

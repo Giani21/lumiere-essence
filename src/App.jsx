@@ -12,34 +12,45 @@ import Footer from './components/Footer'
 import SommelierChat from './components/SommelierChat'
 import ForgotPassword from './pages/ForgotPassword'
 import UpdatePassword from './pages/UpdatePassword'
+import Wishlist from './pages/Wishlist'
 import NotFound from './pages/NotFound'
+
+// --- 1. IMPORTS DE ADMIN (Ajustá las rutas si los guardaste en carpetas distintas) ---
+import AdminRoute from './components/AdminRoute'
+import AdminLayout from './layout/AdminLayout'
+import AdminProducts from './pages/admin/AdminProducts'
 
 function App() {
   const location = useLocation()
   
-  // 1. Páginas de Auth y Error explícitas
+  // Detectamos si estamos en zona admin para ocultar el Navbar público
+  const isAdminPath = location.pathname.startsWith('/admin');
+
+  // Páginas de Auth y Error explícitas
   const authPaths = ['/login', '/register', '/forgot-password', '/update-password', '/404'];
   const isAuthPage = authPaths.includes(location.pathname);
 
-  // 2. Detección de rutas desconocidas (404 Real)
-  // Quitamos checkout de la lista de conocidos por ahora
+  // Agregamos '/admin' a las rutas conocidas para que no se rompa la lógica, 
+  // aunque isAdminPath ya se encarga de ocultar el layout.
   const knownPaths = ['/', '/catalog', '/cart', '/wishlist', ...authPaths];
   
-  // Verificamos si la ruta actual NO está en la lista y NO es una ruta dinámica (/product/...)
   const isUnknownPath = !knownPaths.includes(location.pathname) && 
-                        !location.pathname.startsWith('/product/');
+                        !location.pathname.startsWith('/product/') &&
+                        !isAdminPath; // Excluimos admin de "unknown" para controlarlo nosotros
 
-  // 3. VARIABLE MAESTRA: Ocultar layout si es Auth O es 404
-  const shouldHideLayout = isAuthPage || isUnknownPath;
+  // Ocultamos el Layout público si es Auth, Error, Desconocido O Admin
+  const shouldHideLayout = isAuthPage || isUnknownPath || isAdminPath;
 
   return (
     <div className="min-h-screen bg-light font-sans text-primary flex flex-col">
       <ScrollToTop />
       
+      {/* El Navbar público se oculta en /admin */}
       {!shouldHideLayout && <Navbar />}
       
       <main className="flex-grow">
         <Routes>
+          {/* RUTAS PÚBLICAS */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -47,14 +58,24 @@ function App() {
           <Route path="/update-password" element={<UpdatePassword />} />
           
           <Route path="/catalog" element={<Catalog />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/wishlist" element={<div className="p-20 text-center">Wishlist</div>} />
+          <Route path="/wishlist" element={<Wishlist />} />
 
+          {/* --- 2. RUTAS DE ADMIN PROTEGIDAS --- */}
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<div className="p-4"><h1>Dashboard Principal</h1></div>} />
+              <Route path="products" element={<AdminProducts />} />
+            </Route>
+          </Route>
+
+          {/* RUTA 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       
+      {/* El Chat y Footer públicos se ocultan en /admin */}
       {!shouldHideLayout && <SommelierChat />}
       {!shouldHideLayout && <Footer />}
     </div>
