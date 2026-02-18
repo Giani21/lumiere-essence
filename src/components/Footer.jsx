@@ -139,15 +139,15 @@ export default function Footer() {
           {/* Columna 4: Contacto */}
           <div className="flex flex-col gap-5">
             <h4 className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold mb-2 text-white">Contacto</h4>
-            <a href="mailto:contacto@lumiere.com" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
-              <Mail size={16} strokeWidth={1.5} /> contacto@lumiere.com
+            <a href="mailto:contacto@lumiereessence.com" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
+              <Mail size={16} strokeWidth={1.5} /> contacto@lumiereessence.com
             </a>
-            <a href="https://wa.me/5491100000000" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
-              <Phone size={16} strokeWidth={1.5} /> +54 9 11 0000-0000
+            <a href="https://wa.me/5491134873055" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-accent text-xs transition-colors w-fit">
+              <Phone size={16} strokeWidth={1.5} /> +54 9 11 3487-3055
             </a>
             
             <div className="flex items-center gap-4 mt-2">
-              <a href="#" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all group">
+              <a href="https://www.instagram.com/lumiereessence/" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all group">
                 <Instagram size={14} className="group-hover:scale-110 transition-transform" />
               </a>
               <a href="https://wa.me/5491100000000" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-accent hover:text-accent transition-all group" title="WhatsApp">

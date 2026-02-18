@@ -1,24 +1,18 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Mail, Lock, User, Loader, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, User, Loader2, ArrowLeft, ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react'
 
 export default function Register() {
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
-  
-  // Estados para contraseñas
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
-  // Estados para la visibilidad (Ojo)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
-  const [success, setSuccess] = useState(false) 
-  
+  const [success, setSuccess] = useState(false)
   const navigate = useNavigate()
 
   const handleRegister = async (e) => {
@@ -26,16 +20,8 @@ export default function Register() {
     setLoading(true)
     setErrorMsg(null)
 
-    // 1. Validación de contraseñas coincidentes
     if (password !== confirmPassword) {
       setErrorMsg("Las contraseñas no coinciden.")
-      setLoading(false)
-      return
-    }
-
-    // 2. Validación de longitud (aunque el HTML tiene minLength, doble check no viene mal)
-    if (password.length < 6) {
-      setErrorMsg("La contraseña debe tener al menos 6 caracteres.")
       setLoading(false)
       return
     }
@@ -47,21 +33,18 @@ export default function Register() {
         options: {
           data: {
             full_name: fullName,
-            avatar_url: '' 
+            avatar_url: ''
           }
         }
       })
 
       if (error) throw error
-
       if (data.session) {
-        navigate('/') 
+        navigate('/')
       } else {
         setSuccess(true)
       }
-
     } catch (error) {
-      console.error("Error de registro:", error)
       setErrorMsg(error.message || "Error al crear la cuenta.")
     } finally {
       setLoading(false)
@@ -69,179 +52,203 @@ export default function Register() {
   }
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    })
-    if (error) console.error(error)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+      })
+      if (error) throw error
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
-    <div className="min-h-screen flex bg-light relative">
-      
-      {/* BOTÓN FLOTANTE PARA VOLVER */}
-      <Link to="/" className="absolute top-6 left-6 z-50 flex items-center gap-2 text-gray-500 hover:text-accent transition-colors text-xs tracking-widest uppercase bg-white/80 px-4 py-2 rounded-full backdrop-blur-sm shadow-sm">
-         <ArrowLeft size={14} /> Volver al inicio
-      </Link>
+    <div className="min-h-screen flex bg-white font-sans selection:bg-accent selection:text-primary overflow-x-hidden">
 
-      {/* Columna Derecha (Imagen) */}
-      <div className="hidden lg:block w-1/2 relative overflow-hidden order-2">
-        <img 
-          src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?q=80&w=1974&auto=format&fit=crop" 
-          alt="Perfume Art" 
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-accent/20 backdrop-blur-[1px]"></div>
-      </div>
+      {/* --- SECCIÓN IZQUIERDA: FORMULARIO --- */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 md:p-20 relative">
 
-      {/* Columna Izquierda (Contenido) */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 relative order-1">
-        
-        {/* --- VISTA 1: FORMULARIO DE REGISTRO --- */}
+        {/* Botón volver discreto */}
+        <Link to="/" className="absolute top-10 left-10 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-primary transition-all group">
+          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+          Inicio
+        </Link>
+
         {!success ? (
-          <div className="w-full max-w-md space-y-6 animate-fadeIn mt-12 lg:mt-0">
-            <div className="text-center">
-              <h1 className="font-serif text-3xl md:text-4xl text-primary mb-2">Crear Cuenta</h1>
-              <p className="text-gray-500 text-sm">Únete a Lumière Essence para una experiencia exclusiva.</p>
-            </div>
+          <div className="w-full max-w-sm space-y-8 animate-fadeIn">
 
-            <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 py-3 rounded-sm hover:bg-gray-50 transition-all shadow-sm cursor-pointer">
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-              <span className="text-sm font-medium">Registrarse con Google</span>
-            </button>
+            <header className="space-y-3">
+              <h1 className="font-serif text-4xl text-primary tracking-tight text-center lg:text-left">Unirse a Lumière</h1>
+              <p className="text-gray-400 text-xs font-light tracking-wide text-center lg:text-left">
+                Crea una cuenta para acceder a lanzamientos exclusivos y seguimiento de pedidos.
+              </p>
+            </header>
 
-            <div className="flex items-center justify-between gap-4">
-              <div className="h-px bg-gray-200 flex-1"></div>
-              <span className="text-[10px] text-gray-400 uppercase tracking-widest">O con email</span>
-              <div className="h-px bg-gray-200 flex-1"></div>
-            </div>
-
-            {errorMsg && (
-              <div className="bg-red-50 text-red-500 text-xs p-3 text-center border border-red-100 rounded-sm font-medium">
-                {errorMsg}
-              </div>
-            )}
-
-            <form onSubmit={handleRegister} className="space-y-4">
-              {/* Nombre */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Nombre Completo</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    type="text" required 
-                    value={fullName} onChange={(e) => setFullName(e.target.value)} 
-                    className="w-full bg-gray-50 border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors rounded-sm" 
-                    placeholder="Juan Pérez" 
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    type="email" required 
-                    value={email} onChange={(e) => setEmail(e.target.value)} 
-                    className="w-full bg-gray-50 border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors rounded-sm" 
-                    placeholder="nombre@ejemplo.com" 
-                  />
-                </div>
-              </div>
-
-              {/* Contraseña */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Contraseña</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    type={showPassword ? "text" : "password"} // Cambio dinámico de tipo
-                    required minLength={6}
-                    value={password} onChange={(e) => setPassword(e.target.value)} 
-                    className="w-full bg-gray-50 border border-gray-200 pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors rounded-sm" 
-                    placeholder="Mínimo 6 caracteres" 
-                  />
-                  {/* Botón Ojo */}
-                  <button 
-                    type="button" // Importante para que no envíe el form
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirmar Contraseña */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Confirmar Contraseña</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                  <input 
-                    type={showConfirmPassword ? "text" : "password"} // Cambio dinámico de tipo
-                    required minLength={6}
-                    value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} 
-                    className={`w-full bg-gray-50 border pl-10 pr-10 py-2.5 text-sm focus:outline-none transition-colors rounded-sm ${
-                      confirmPassword && password !== confirmPassword 
-                        ? 'border-red-300 focus:border-red-500' // Borde rojo si no coinciden mientras escribe
-                        : 'border-gray-200 focus:border-accent'
-                    }`}
-                    placeholder="Repite tu contraseña" 
-                  />
-                  {/* Botón Ojo Confirmación */}
-                  <button 
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 cursor-pointer"
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-[10px] text-red-400 mt-1">Las contraseñas no coinciden</p>
-                )}
-              </div>
-
-              <button type="submit" disabled={loading} className="w-full bg-primary text-light py-3 uppercase tracking-[0.2em] text-xs font-bold hover:bg-accent hover:text-primary transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 rounded-sm shadow-lg mt-6">
-                {loading ? <Loader className="animate-spin" size={16} /> : 'Crear Cuenta'}
+            <div className="space-y-5">
+              {/* BOTÓN GOOGLE */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-4 bg-white border border-gray-100 py-3.5 text-xs font-bold uppercase tracking-widest text-primary hover:shadow-md hover:border-gray-200 transition-all duration-300 active:scale-[0.98]"
+              >
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
+                Registrarse con Google
               </button>
-            </form>
 
-            <div className="text-center text-xs text-gray-500">
-              ¿Ya tienes cuenta? <Link to="/login" className="text-accent font-bold hover:underline ml-1">Inicia Sesión</Link>
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-100"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em]">
+                  <span className="bg-white px-4 text-gray-300">o vía formulario</span>
+                </div>
+              </div>
+
+              {errorMsg && (
+                <div className="bg-red-50/50 border-l-2 border-red-400 text-red-600 text-[10px] p-4 font-medium uppercase tracking-wider animate-shake">
+                  {errorMsg}
+                </div>
+              )}
+
+              <form onSubmit={handleRegister} className="space-y-4">
+                {/* Nombre Completo */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Nombre Completo</label>
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                    <input
+                      type="text" required
+                      value={fullName} onChange={(e) => setFullName(e.target.value)}
+                      className="w-full bg-white border border-gray-100 pl-11 pr-4 py-3 text-xs focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all"
+                      placeholder="JUAN PÉREZ"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Email</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                    <input
+                      type="email" required
+                      value={email} onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white border border-gray-100 pl-11 pr-4 py-3 text-xs focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all"
+                      placeholder="TU@EMAIL.COM"
+                    />
+                  </div>
+                </div>
+
+                {/* Contraseña */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Contraseña</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required minLength={6}
+                      value={password} onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-white border border-gray-100 pl-11 pr-11 py-3 text-xs focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all"
+                      placeholder="MÍNIMO 6 CARACTERES"
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-accent transition-colors">
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirmar Contraseña */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Confirmar Contraseña</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      required minLength={6}
+                      value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`w-full bg-white border pl-11 pr-11 py-3 text-xs focus:outline-none transition-all ${confirmPassword && password !== confirmPassword
+                          ? 'border-red-300 focus:ring-red-500/5'
+                          : 'border-gray-100 focus:border-accent focus:ring-accent/5'
+                        }`}
+                      placeholder="REPITE TU CONTRASEÑA"
+                    />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-accent transition-colors">
+                      {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-[9px] text-red-400 uppercase tracking-widest mt-1 ml-1">Las contraseñas no coinciden</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary text-light py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-accent hover:text-primary transition-all duration-500 shadow-lg shadow-primary/10 flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-50 pt-8"
+                >
+                  {loading ? <Loader2 className="animate-spin" size={16} /> : 'Crear Cuenta'}
+                </button>
+              </form>
+
+              <p className="text-center text-[10px] text-gray-400 uppercase tracking-widest pt-4 font-light">
+                ¿Ya tienes cuenta? <Link to="/login" className="text-accent font-bold hover:text-primary transition-colors border-b border-accent/20 hover:border-primary ml-1">Inicia Sesión</Link>
+              </p>
             </div>
           </div>
         ) : (
-          
-          /* --- VISTA 2: MENSAJE DE ÉXITO --- */
-          <div className="w-full max-w-md text-center animate-fadeIn space-y-6">
-            <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Mail size={40} className="text-accent" strokeWidth={1.5} />
-            </div>
-            
-            <h2 className="font-serif text-3xl text-primary">Revisa tu correo</h2>
-            
-            <div className="text-gray-500 text-sm leading-relaxed">
-              <p className="mb-4">Hemos enviado un enlace de confirmación a:</p>
-              <p className="font-bold text-primary text-lg mb-4">{email}</p>
-              <p>Por favor, haz clic en el enlace para activar tu cuenta y comenzar tu experiencia en Lumière Essence.</p>
+          /* --- VISTA DE ÉXITO PREMIUM --- */
+          <div className="w-full max-w-sm text-center animate-fadeIn space-y-8">
+            <div className="relative mx-auto w-24 h-24">
+              <div className="absolute inset-0 bg-accent/10 rounded-full animate-ping opacity-25"></div>
+              <div className="relative bg-white border border-accent/20 rounded-full w-24 h-24 flex items-center justify-center">
+                <Mail size={40} className="text-accent" strokeWidth={1} />
+              </div>
             </div>
 
-            <div className="pt-8 border-t border-gray-100">
-              <p className="text-xs text-gray-400 mb-4">¿Ya confirmaste tu correo?</p>
-              <Link 
-                to="/login" 
-                className="w-full bg-primary text-light py-3 uppercase tracking-[0.2em] text-xs font-bold hover:bg-accent hover:text-primary transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer rounded-sm shadow-lg"
-              >
-                Ir a Iniciar Sesión <ArrowRight size={16} />
-              </Link>
+            <div className="space-y-4">
+              <h2 className="font-serif text-4xl text-primary">Confirma tu email</h2>
+              <div className="text-gray-400 text-xs font-light tracking-wide leading-relaxed space-y-4">
+                <p>Casi terminamos. Hemos enviado un enlace de activación a:</p>
+                <p className="font-bold text-primary tracking-widest border-y border-gray-50 py-3">{email.toUpperCase()}</p>
+                <p>Por favor, revisa tu bandeja de entrada (y la de spam) para completar tu registro en Lumière Essence.</p>
+              </div>
             </div>
+
+            <Link
+              to="/login"
+              className="w-full bg-primary text-light py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-accent hover:text-primary transition-all duration-500 flex items-center justify-center gap-3 shadow-xl"
+            >
+              Ir al Login <ArrowRight size={14} />
+            </Link>
           </div>
         )}
-
       </div>
+
+      {/* --- SECCIÓN DERECHA: FONDO SÓLIDO Y TEXTO --- */}
+      <div className="hidden lg:flex w-[45%] bg-primary flex-col items-center justify-center p-16 relative overflow-hidden order-2">
+        <div className="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-white/[0.02] rounded-full blur-3xl"></div>
+
+        <div className="relative space-y-8 max-w-sm text-center">
+          <Sparkles className="text-accent mx-auto mb-4" size={32} strokeWidth={1} />
+
+          <div className="space-y-2">
+            <h2 className="font-serif text-6xl text-accent leading-none tracking-tighter italic">
+              Lumière
+            </h2>
+            <h3 className="font-serif text-4xl text-accent leading-none font-light italic opacity-90">
+              Essence
+            </h3>
+          </div>
+
+          <div className="h-[1px] w-12 bg-accent/60 mx-auto"></div>
+
+          <p className="text-[10px] tracking-[0.6em] uppercase font-light text-accent leading-relaxed opacity-80">
+            Authentic & Timeless <br /> Fragrances
+          </p>
+        </div>
+      </div>
+
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Mail, Lock, Loader } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowLeft, Sparkles } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -11,46 +11,28 @@ export default function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // 1. Escuchar cambios de estado en tiempo real
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Evento SIGNED_IN ocurre cuando Google termina de redirigir y procesar el token
       if (event === 'SIGNED_IN' && session) {
-        console.log("✅ Login detectado (Google o Email), verificando rol...")
         await checkRoleAndRedirect(session.user.id)
       }
     })
-
-    // 2. Limpieza al desmontar
     return () => {
       authListener.subscription.unsubscribe()
     }
   }, [])
 
-  // --- FUNCIÓN HELPER PARA DECIDIR EL DESTINO ---
   const checkRoleAndRedirect = async (userId) => {
     try {
-      // Consultamos el rol en la base de datos
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single()
-      
+
       if (error) throw error
-
-      // EL GRAN FILTRO:
-      if (profile?.role === 'admin') {
-        console.log("👮‍♂️ Admin detectado. Redirigiendo al panel...")
-        navigate('/admin', { replace: true })
-      } else {
-        console.log("👤 Cliente detectado. Redirigiendo a la tienda...")
-        navigate('/', { replace: true })
-      }
-
+      navigate(profile?.role === 'admin' ? '/admin' : '/', { replace: true })
     } catch (error) {
-      console.error("Error verificando rol:", error)
-      // En caso de duda (o error de red), lo mandamos al home por seguridad
-      navigate('/') 
+      navigate('/')
     }
   }
 
@@ -58,19 +40,13 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setErrorMsg(null)
-
     try {
-      // 1. Intentamos loguear
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-
-      // 2. Si pasa, verificamos el rol antes de redirigir
       await checkRoleAndRedirect(data.user.id)
-
     } catch (error) {
-      console.error(error)
       setErrorMsg('Credenciales inválidas. Por favor verifique sus datos.')
-      setLoading(false) // Solo bajamos el loading si hubo error, si no, esperamos al redirect
+      setLoading(false)
     }
   }
 
@@ -78,9 +54,7 @@ export default function Login() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin // Vuelve a esta misma URL para que el useEffect lo capture
-        }
+        options: { redirectTo: window.location.origin }
       })
       if (error) throw error
     } catch (error) {
@@ -89,106 +63,114 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex bg-light">
-      
-      {/* --- COLUMNA IZQUIERDA: IMAGEN --- */}
-      <div className="hidden lg:block w-1/2 relative overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1595353131754-06c88820c75c?q=80&w=1974&auto=format&fit=crop" 
-          alt="Perfume Luxury" 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[20s] hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-primary/40 backdrop-blur-[2px] flex items-center justify-center">
-          <div className="text-center text-light p-12 border border-light/20 backdrop-blur-md max-w-md">
-            <h2 className="font-serif text-4xl mb-4">Lumière Essence</h2>
-            <p className="text-sm tracking-[0.2em] uppercase font-light">
-              Donde la fragancia se encuentra con el alma.
-            </p>
+    <div className="min-h-screen flex bg-white font-sans selection:bg-accent selection:text-primary">
+
+      <div className="hidden lg:flex w-[45%] bg-primary flex-col items-center justify-center p-16 relative overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-white/[0.02] rounded-full blur-3xl"></div>
+
+        <div className="relative space-y-8 max-w-sm text-center">
+          <Sparkles className="text-accent mx-auto mb-4 opacity-100" size={32} strokeWidth={1} />
+
+          <div className="space-y-2">
+            <h2 className="font-serif text-6xl text-accent leading-none tracking-tighter italic">
+              Lumière
+            </h2>
+            <h3 className="font-serif text-4xl text-accent leading-none font-light italic opacity-90">
+              Essence
+            </h3>
           </div>
+
+          <div className="h-[1px] w-12 bg-accent/60 mx-auto"></div>
+
+          <p className="text-[10px] tracking-[0.6em] uppercase font-light text-accent leading-relaxed opacity-80">
+            Authentic & Timeless <br /> Fragrances
+          </p>
         </div>
       </div>
 
-      {/* --- COLUMNA DERECHA: FORMULARIO --- */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 relative">
-        <Link to="/" className="absolute top-8 right-8 text-gray-400 hover:text-accent transition-colors text-xs tracking-widest uppercase">
-          Volver al inicio
+      {/* --- SECCIÓN DERECHA: FORMULARIO (Mantenemos tu lógica y diseño) --- */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 md:p-20 bg-white">
+
+        <Link to="/" className="absolute top-10 right-10 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-primary transition-all group">
+          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+          Volver
         </Link>
 
-        <div className="w-full max-w-md space-y-8 animate-fadeIn">
-          <div className="text-center">
-            <h1 className="font-serif text-3xl md:text-4xl text-primary mb-2">Bienvenido</h1>
-            <p className="text-gray-500 text-sm">Ingresa a tu cuenta para gestionar tus pedidos.</p>
-          </div>
+        <div className="w-full max-w-sm space-y-10">
+          <header className="space-y-3">
+            <h1 className="font-serif text-4xl text-primary tracking-tight">Bienvenido</h1>
+            <p className="text-gray-400 text-xs font-light tracking-wide">
+              Ingresa tus credenciales para acceder a tu perfil.
+            </p>
+          </header>
 
-          {/* BOTÓN GOOGLE */}
-          <button 
-            type="button" // Importante: type button para que no envíe el form
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 py-3 rounded-sm hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-            <span className="text-sm font-medium">Continuar con Google</span>
-          </button>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="h-px bg-gray-200 flex-1"></div>
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest">O con email</span>
-            <div className="h-px bg-gray-200 flex-1"></div>
-          </div>
-
-          {errorMsg && (
-            <div className="bg-red-50 text-red-500 text-xs p-3 text-center border border-red-100">
-              {errorMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
-                <input 
-                  type="email" 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-accent focus:bg-white transition-colors"
-                  placeholder="nombre@ejemplo.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Contraseña</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                <input 
-                  type="password" 
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-accent focus:bg-white transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-              <div className="text-right">
-                <Link to="/forgot-password" className="text-[10px] text-accent hover:underline">
-                    ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-primary text-light py-3 uppercase tracking-[0.2em] text-xs font-bold hover:bg-accent hover:text-primary transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          <div className="space-y-6">
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-4 bg-white border border-gray-100 py-3.5 text-xs font-bold uppercase tracking-widest text-primary hover:shadow-md hover:border-gray-200 transition-all duration-300 active:scale-[0.98]"
             >
-              {loading ? <Loader className="animate-spin" size={16} /> : 'Ingresar'}
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
+              Continuar con Google
             </button>
-          </form>
 
-          <div className="text-center text-xs text-gray-500">
-            ¿No tienes cuenta? <Link to="/register" className="text-accent font-bold hover:underline ml-1">Regístrate</Link>
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-100"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em]">
+                <span className="bg-white px-4 text-gray-300">o vía email</span>
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div className="bg-red-50/50 border-l-2 border-red-400 text-red-600 text-[10px] p-4 font-medium uppercase tracking-wider">
+                {errorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold ml-1">Email</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                  <input
+                    type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white border border-gray-100 pl-11 pr-4 py-3.5 text-xs focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all placeholder:text-gray-200"
+                    placeholder="TU@EMAIL.COM"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold">Contraseña</label>
+                  <Link to="/forgot-password" size={16} className="text-[9px] uppercase tracking-widest text-accent hover:text-primary transition-colors">
+                    ¿Olvidaste?
+                  </Link>
+                </div>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-accent transition-colors" size={16} />
+                  <input
+                    type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-white border border-gray-100 pl-11 pr-4 py-3.5 text-xs focus:outline-none focus:border-accent focus:ring-4 focus:ring-accent/5 transition-all placeholder:text-gray-200"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-light py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-accent hover:text-primary transition-all duration-500 shadow-lg shadow-primary/10 flex items-center justify-center gap-3 disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="animate-spin" size={16} /> : 'Iniciar Sesión'}
+              </button>
+            </form>
+
+            <p className="text-center text-[10px] text-gray-400 uppercase tracking-widest pt-4 font-light">
+              ¿Sin cuenta? <Link to="/register" className="text-accent font-bold hover:text-primary transition-colors border-b border-accent/20 hover:border-primary ml-1">Regístrate</Link>
+            </p>
           </div>
         </div>
       </div>
