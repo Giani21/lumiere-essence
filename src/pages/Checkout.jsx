@@ -36,21 +36,27 @@ export default function Checkout() {
       console.log("Iniciando Checkout desde:", origin)
 
       // 3. Llamada a la Edge Function
-      const response = await fetch('https://rcrnxjeyhwgbpmqccmkr.supabase.co/functions/v1/create-checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // IMPORTANTE: La clave anónima para que Supabase nos deje pasar
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, 
-        },
-        body: JSON.stringify({
-          items: cart,
-          customer: formData,
-          totalPrice: totalPrice,
-          userId: session?.user?.id || null,
-          origin: origin // <--- AQUÍ ESTÁ LA MAGIA
-        })
-      })
+      const response = await fetch(
+        'https://rcrnxjeyhwgbpmqccmkr.supabase.co/functions/v1/create-checkout',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            items: cart,
+            customer: {
+              email: formData.email,
+              name: `${formData.first_name} ${formData.last_name}`,
+              phone: formData.phone,
+              address: formData.address,
+              city: formData.city
+            },
+            userId: session?.user?.id || null
+          })
+        }
+      )
 
       const result = await response.json()
 
