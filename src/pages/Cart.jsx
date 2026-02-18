@@ -181,10 +181,13 @@ export default function Cart() {
               </div>
 
               {/* Botón principal de compra */}
-              <button className="w-full relative bg-primary text-light overflow-hidden flex items-center justify-center py-4 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.2em] text-xs uppercase cursor-pointer group">
+              <Link 
+                to="/checkout" 
+                className="w-full relative bg-primary text-light overflow-hidden flex items-center justify-center py-4 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.2em] text-xs uppercase cursor-pointer group"
+              >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]"></div>
-                <span className="relative z-10">Iniciar Compra</span>
-              </button>
+                <span className="relative z-10 text-center">Proceder al pago</span>
+              </Link>
 
               <div className="mt-6 flex flex-col gap-3 text-[10px] tracking-widest uppercase text-center text-gray-400">
                 <p className="flex items-center justify-center gap-2">

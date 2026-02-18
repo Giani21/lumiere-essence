@@ -135,7 +135,7 @@ export default function Terms() {
           <span className="text-[10px] uppercase tracking-[0.3em] font-bold">Identificación Legal</span>
         </div>
         <div className="space-y-4 opacity-90">
-          <p className="text-sm">Para consultas sobre estos términos o protección de datos, contactanos en <strong className="text-accent underline">legales@lumiereessence.com.ar</strong></p>
+          <p className="text-sm">Para consultas sobre estos términos o protección de datos, contactanos en <strong className="text-accent underline">contacto@lumiereessence.com.ar</strong></p>
           <div className="h-px bg-white/10 w-full"></div>
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <p className="text-xs font-light">Titular responsable: <span className="font-bold">Gianfranco Andreachi</span></p>

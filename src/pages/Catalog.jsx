@@ -13,19 +13,20 @@ export default function Catalog() {
     // --- ESTADOS DE FILTROS ---
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedBrand, setSelectedBrand] = useState('Todas')
-    const [selectedGender, setSelectedGender] = useState('Todas') // <--- Cambiado de Audience a Gender
-    const [selectedType, setSelectedType] = useState('Todas')
+    const [selectedGender, setSelectedGender] = useState('Todas')
+    const [selectedType, setSelectedType] = useState('Todas') // Este es el de Concentración
     const [selectedFamily, setSelectedFamily] = useState('Todas')
     const [priceRange, setPriceRange] = useState(Infinity)
     const [isBrandOpen, setIsBrandOpen] = useState(false)
 
     // --- OPCIONES DE FILTROS ---
     const brands = ['Todas', 'Adriana Costantini', 'Benito Fernández', 'India Style', 'Ishtar', 'Laca Laboratorio', 'Laurencio Adot', 'Lotus', 'Mimo & Co', 'Nasa', 'Ona Saez', 'Pato Pampa', 'Prototype', 'Vanesa', 'Yagmour']
-    const genders = ['Todas', 'Masculinos', 'Femeninos'] // <--- Alineado con el Home
-    const types = ['Todas', 'Body Splash', 'Desodorante', 'Eau de cologne', 'Eau de parfum', 'Eau de toilette', 'Set de Regalos']
+    const genders = ['Todas', 'Masculinos', 'Femeninos', 'Unisex']
+    // Estas opciones deben coincidir con lo que cargas en el Admin (tabla products -> campo category)
+    const types = ['Todas', 'Eau de Parfum', 'Eau de Toilette', 'Parfum', 'Extrait de Parfum', 'Colonia', 'Body Splash', 'Set de Regalos']
     const families = ['Todas', 'Oriental', 'Frutal', 'Floral', 'Amaderado', 'Cítrico']
 
-    // 1. EFECTO: Sincronizar URL con Filtros (Search y Gender)
+    // 1. Sincronizar URL con Filtros
     useEffect(() => {
         const queryFromUrl = searchParams.get('search')
         const genderFromUrl = searchParams.get('gender')
@@ -34,7 +35,6 @@ export default function Catalog() {
         else setSearchQuery('')
 
         if (genderFromUrl) {
-            // Validamos que el género de la URL exista en nuestras opciones
             const validGender = genders.find(g => g.toLowerCase() === genderFromUrl.toLowerCase())
             setSelectedGender(validGender || 'Todas')
         } else {
@@ -42,15 +42,14 @@ export default function Catalog() {
         }
     }, [searchParams])
 
-    // 2. FETCH INICIAL
+    // 2. Carga inicial de productos
     useEffect(() => {
         async function fetchCatalog() {
             try {
                 const { data, error } = await supabase
                     .from('products')
                     .select(`*, product_variants ( price, size_ml, stock )`)
-                    .eq('is_active', true) // Solo activos
-                    .eq('is_archived', false) // Solo no archivados
+                    .eq('is_active', true)
                     .order('created_at', { ascending: false })
                 
                 if (error) throw error
@@ -64,10 +63,11 @@ export default function Catalog() {
         fetchCatalog()
     }, [])
 
-    // 3. LÓGICA DE FILTRADO CRUZADO
+    // 3. LÓGICA DE FILTRADO CRUZADO (CORREGIDA)
     useEffect(() => {
         let result = products
 
+        // Filtro de búsqueda
         if (searchQuery) {
             result = result.filter(p =>
                 p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,11 +75,19 @@ export default function Catalog() {
             )
         }
 
+        // Filtro de Marca
         if (selectedBrand !== 'Todas') result = result.filter(p => p.brand === selectedBrand)
+        
+        // Filtro de Género
         if (selectedGender !== 'Todas') result = result.filter(p => p.gender === selectedGender)
+        
+        // --- FIX AQUÍ: Concentración se filtra por el campo 'category' ---
         if (selectedType !== 'Todas') result = result.filter(p => p.category === selectedType)
+        
+        // Filtro de Familia
         if (selectedFamily !== 'Todas') result = result.filter(p => p.olfactory_family === selectedFamily)
 
+        // Filtro por Precio
         if (priceRange !== Infinity) {
             result = result.filter(p => {
                 if (!p.product_variants || p.product_variants.length === 0) return false
@@ -124,10 +132,9 @@ export default function Catalog() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-16">
 
-                    {/* --- SIDEBAR DE FILTROS --- */}
+                    {/* SIDEBAR */}
                     <aside className="lg:col-span-1 space-y-10">
 
-                        {/* BUSCADOR */}
                         <div className="relative group border-b border-gray-100 pb-4">
                             <input
                                 type="text"
@@ -144,7 +151,6 @@ export default function Catalog() {
                             )}
                         </div>
 
-                        {/* FILTRO DE MARCA (ACORDEÓN) */}
                         <div className="border-b border-gray-100 pb-6">
                             <button
                                 onClick={() => setIsBrandOpen(!isBrandOpen)}
@@ -158,7 +164,7 @@ export default function Catalog() {
                             </button>
 
                             {isBrandOpen && (
-                                <div className="mt-6 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar animate-fadeIn">
+                                <div className="mt-6 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                     {brands.map(brand => (
                                         <button
                                             key={brand}
@@ -172,7 +178,6 @@ export default function Catalog() {
                             )}
                         </div>
 
-                        {/* FILTROS DE CHIPS (GÉNERO Y FAMILIA) */}
                         <div className="space-y-10">
                             <FilterGroup title="Género" options={genders} selected={selectedGender} setSelected={setSelectedGender} layout="chips" />
                             
@@ -191,10 +196,10 @@ export default function Catalog() {
                             </div>
 
                             <FilterGroup title="Familia Olfativa" options={families} selected={selectedFamily} setSelected={setSelectedFamily} layout="chips" />
+                            {/* --- AQUÍ SE MUESTRA EL FILTRO DE CONCENTRACIÓN --- */}
                             <FilterGroup title="Concentración" options={types} selected={selectedType} setSelected={setSelectedType} layout="list" />
                         </div>
 
-                        {/* RESET */}
                         {(selectedBrand !== 'Todas' || selectedGender !== 'Todas' || selectedType !== 'Todas' || selectedFamily !== 'Todas' || searchQuery !== '' || priceRange !== Infinity) && (
                             <button
                                 onClick={clearFilters}
@@ -205,7 +210,7 @@ export default function Catalog() {
                         )}
                     </aside>
 
-                    {/* GRILLA DE PRODUCTOS */}
+                    {/* GRILLA */}
                     <main className="lg:col-span-3">
                         {loading ? (
                             <div className="flex justify-center py-32">

@@ -26,6 +26,10 @@ import Privacy from './pages/legal/Privacy'
 import Returns from './pages/legal/Returns'
 import FAQ from './pages/legal/FAQ'
 
+//Checkout
+import Checkout from './pages/Checkout'
+import Success from './pages/Success'
+
 // PÁGINAS DE ERROR
 import NotFound from './pages/NotFound'
 
@@ -84,6 +88,10 @@ function App() {
           <Route path="/legal/returns" element={<Returns />} />
           <Route path="/legal/faq" element={<FAQ />} />
         </Route>
+
+        {/* Checkout */}
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/success" element={<Success />} />
 
 
         {/* === ZONA 2: AUTH & ERRORES (Sin Navbar/Footer) === */}
