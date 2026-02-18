@@ -1,18 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { supabase } from '../lib/supabase'
-import { Loader2, Lock, Truck, CreditCard, ArrowLeft } from 'lucide-react'
+import { Loader2, Lock, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Checkout() {
   const { cart, totalPrice } = useCart()
   const [loading, setLoading] = useState(false)
-  
+  const [shippingCost, setShippingCost] = useState(0)
+  const [shippingMethod, setShippingMethod] = useState('')
+
   const [formData, setFormData] = useState({
     email: '',
     first_name: '',
     last_name: '',
-    address: '',
+    street: '',
+    number: '',
+    floor: '',
+    dept: '',
+    zip: '',
     city: '',
     phone: ''
   })
@@ -21,21 +27,35 @@ export default function Checkout() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // 🔹 Calcular costo de envío al cambiar zip o city
+  useEffect(() => {
+    const calculateShipping = async () => {
+      if (!formData.city || !formData.zip) return
+      try {
+        const res = await fetch('/functions/v1/get-shipping-cost', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ city: formData.city, zip: formData.zip })
+        })
+        const data = await res.json()
+        setShippingCost(data.cost || 0)
+        setShippingMethod(data.method || '')
+      } catch (err) {
+        console.error('Error calculando envío:', err)
+      }
+    }
+    calculateShipping()
+  }, [formData.city, formData.zip])
+
   const handlePay = async (e) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // 1. Obtenemos sesión (si existe)
       const { data: { session } } = await supabase.auth.getSession()
 
-      // 2. Definimos el ORIGEN (localhost o tu dominio real)
-      // Esto soluciona el error "back_url must be defined"
-      const origin = window.location.origin 
-
-      console.log("Iniciando Checkout desde:", origin)
-
-      // 3. Llamada a la Edge Function
       const response = await fetch(
         'https://rcrnxjeyhwgbpmqccmkr.supabase.co/functions/v1/create-checkout',
         {
@@ -50,21 +70,25 @@ export default function Checkout() {
               email: formData.email,
               name: `${formData.first_name} ${formData.last_name}`,
               phone: formData.phone,
-              address: formData.address,
-              city: formData.city
+              address: {
+                street: formData.street,
+                number: formData.number,
+                floor: formData.floor,
+                dept: formData.dept,
+                zip: formData.zip,
+                city: formData.city
+              }
             },
+            shippingCost,
+            shippingMethod,
             userId: session?.user?.id || null
           })
         }
       )
 
       const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'Error al comunicarse con el servidor')
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Error al comunicarse con el servidor')
-      }
-
-      // 4. Redirección a Mercado Pago
       if (result.url) {
         window.location.href = result.url
       } else {
@@ -88,8 +112,8 @@ export default function Checkout() {
         </Link>
 
         <form onSubmit={handlePay} className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
-          {/* COLUMNA IZQUIERDA: DATOS */}
+
+          {/* DATOS DE ENVÍO */}
           <div className="lg:col-span-7 space-y-8">
             <div className="border-b border-gray-200 pb-4">
               <h2 className="font-serif text-2xl text-primary">Detalles de Envío</h2>
@@ -106,11 +130,27 @@ export default function Checkout() {
               <div>
                 <input required type="text" name="last_name" placeholder="Apellido" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
               </div>
-              <div className="md:col-span-2">
-                <input required type="text" name="address" placeholder="Dirección (Calle y Altura)" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+              <div>
+                <input required type="text" name="street" placeholder="Calle" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
               </div>
               <div>
-                <input required type="text" name="city" placeholder="Ciudad / Localidad" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+                <input required type="text" name="number" placeholder="Número" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+              </div>
+              <div>
+                <input type="text" name="floor" placeholder="Piso (opcional)" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+              </div>
+              <div>
+                <input type="text" name="dept" placeholder="Departamento (opcional)" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+              </div>
+              <div>
+                <input required type="text" name="zip" placeholder="Código Postal" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
+              </div>
+              <div>
+                <select required name="city" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none">
+                  <option value="">Seleccionar Ciudad</option>
+                  <option value="CABA">CABA</option>
+                  <option value="GBA">GBA</option>
+                </select>
               </div>
               <div>
                 <input required type="tel" name="phone" placeholder="Teléfono" onChange={handleInputChange} className="w-full bg-white border border-gray-100 p-4 text-sm focus:border-accent outline-none" />
@@ -118,12 +158,12 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* COLUMNA DERECHA: RESUMEN */}
+          {/* RESUMEN DEL PEDIDO */}
           <div className="lg:col-span-5">
             <div className="bg-white p-8 border border-gray-50 shadow-premium sticky top-32">
-              <h3 className="font-serif text-xl text-primary mb-8">Tu Pedido</h3>
-              
-              <div className="space-y-4 mb-8">
+              <h3 className="font-serif text-xl text-primary mb-4">Tu Pedido</h3>
+
+              <div className="space-y-2 mb-4">
                 {cart.map(item => (
                   <div key={item.variantId} className="flex justify-between items-center text-xs">
                     <span className="text-gray-500 font-light">{item.brand} - {item.name} <span className="text-[10px] opacity-60">x{item.quantity}</span></span>
@@ -132,11 +172,14 @@ export default function Checkout() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-100 pt-6 mb-8">
-                <div className="flex justify-between items-end">
-                  <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Total</span>
-                  <span className="font-serif text-3xl text-primary">${totalPrice.toLocaleString('es-AR')}</span>
-                </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span>Envío ({shippingMethod || '-'})</span>
+                <span>${shippingCost.toLocaleString('es-AR')}</span>
+              </div>
+
+              <div className="border-t border-gray-100 pt-4 mb-8 flex justify-between items-end">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Total</span>
+                <span className="font-serif text-3xl text-primary">${(totalPrice + shippingCost).toLocaleString('es-AR')}</span>
               </div>
 
               <button 
