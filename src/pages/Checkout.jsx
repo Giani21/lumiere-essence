@@ -9,6 +9,9 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [shippingCost, setShippingCost] = useState(0)
 
+  // Estado separado para el CP para manejar el debounce
+  const [debouncedZip, setDebouncedZip] = useState('')
+
   const [formData, setFormData] = useState({
     email: '', first_name: '', last_name: '',
     street: '', number: '', floor: '', dept: '',
@@ -19,27 +22,43 @@ export default function Checkout() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // EFECTO 1: Debounce del ZIP (Espera 500ms a que el usuario deje de escribir)
   useEffect(() => {
-    if (formData.zip) {
+    const timer = setTimeout(() => {
+      setDebouncedZip(formData.zip)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [formData.zip])
+
+  // EFECTO 2: Calcular envío solo cuando el ZIP "confirmado" cambie
+  useEffect(() => {
+    if (debouncedZip && debouncedZip.length >= 4) {
+      // Importante: Convertir a Number para que el backend no falle
+      const zipNumber = parseInt(debouncedZip, 10)
+      
       fetch(`${import.meta.env.VITE_BASE_URL}/functions/v1/get-shipping-cost`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zip: formData.zip })
+        body: JSON.stringify({ zip: zipNumber }) 
       })
         .then(res => res.json())
         .then(data => setShippingCost(data.price || 0))
         .catch(err => console.error("Error calculando envío:", err))
     }
-  }, [formData.zip])
+  }, [debouncedZip])
 
   const handlePay = async (e) => {
     e.preventDefault()
     setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
+      
       const response = await fetch(`${import.meta.env.VITE_BASE_URL}/functions/v1/create-checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` 
+        },
         body: JSON.stringify({
           items: cart,
           customer: {
@@ -51,22 +70,28 @@ export default function Checkout() {
               number: formData.number,
               floor: formData.floor,
               dept: formData.dept,
-              zip: formData.zip,
+              zip: parseInt(formData.zip, 10), // Enviar como numero
               city: formData.city
             }
           },
-          shippingCost,
+          // No enviamos shippingCost desde el front como "verdad absoluta", 
+          // el backend debe recalcularlo por seguridad, pero sirve de referencia.
           userId: session?.user?.id || null
         })
       })
+
       const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Error')
+      if (!response.ok) throw new Error(result.error || 'Error en el servidor')
+      
       if (result.url) window.location.href = result.url
-      else alert("Error: no recibimos el link de pago.")
+      else throw new Error("No se recibió link de pago")
+
     } catch (err) {
       console.error(err)
-      alert('Error al procesar tu compra: ' + err.message)
-    } finally { setLoading(false) }
+      alert('Error: ' + err.message)
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   return (
