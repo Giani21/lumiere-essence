@@ -13,6 +13,7 @@ import Catalog from './pages/Catalog'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Wishlist from './pages/Wishlist'
+import Orders from './pages/Orders'
 
 // PÁGINAS DE AUTH
 import Login from './pages/Login'
@@ -81,6 +82,7 @@ function App() {
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/orders" element={<Orders />} />
           
           {/* Legales */}
           <Route path="/legal/terms" element={<Terms />} />
