@@ -1,4 +1,4 @@
-import LegalLayout from '../../components/LegalLayout'
+import LegalLayout from '../../layout/LegalLayout'
 import { 
   ShieldCheck, 
   Lock, 

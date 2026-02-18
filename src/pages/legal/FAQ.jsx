@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import LegalLayout from '../../components/LegalLayout'
+import LegalLayout from '../../layout/LegalLayout'
 import { Plus, Minus } from 'lucide-react'
 
 // Datos de preguntas
