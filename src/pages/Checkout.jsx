@@ -36,7 +36,7 @@ export default function Checkout() {
       // Importante: Convertir a Number para que el backend no falle
       const zipNumber = parseInt(debouncedZip, 10)
       
-      fetch(`${import.meta.env.VITE_BASE_URL}/functions/v1/get-shipping-cost`, {
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-shipping-cost`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ zip: zipNumber }) 
