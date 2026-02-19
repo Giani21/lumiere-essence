@@ -5,11 +5,30 @@ import { Loader2, Lock, ArrowLeft, MapPin, CreditCard, Truck } from 'lucide-reac
 import { Link } from 'react-router-dom'
 
 const ZONES_DATA = {
-  "CABA": ["Villa Urquiza", "Belgrano", "Coghlan", "Saavedra", "Villa Pueyrredón", "Palermo", "Recoleta", "Caballito", "Microcentro", "Devoto", "Otro Barrio CABA"],
-  "GBA_NORTE": ["Vicente López", "Olivos", "Florida", "San Martín", "San Isidro", "Martínez", "Tigre"],
-  "GBA_OESTE": ["Tres de Febrero", "Ramos Mejía", "Haedo", "Morón"],
-  "GBA_SUR": ["Avellaneda", "Lanús", "Lomas de Zamora", "Quilmes"],
-  "INTERIOR": ["Resto del País (Correo Argentino)"]
+  "CABA": [
+    "Villa Urquiza", "Coghlan", "Saavedra", "Villa Pueyrredón", "Parque Chas", "Villa Ortúzar", "Belgrano", "Colegiales",
+    "Núñez", "Chacarita", "Agronomía", "La Paternal", "Villa del Parque", "Villa Devoto", "Villa Crespo",
+    "Palermo", "Recoleta", "Caballito", "Almagro", "Monte Castro", "Villa Real", "Versalles", "Floresta", "Villa Santa Rita", "Villa General Mitre", "Vélez Sársfield", "Villa Luro",
+    "Retiro", "San Nicolás", "Monserrat", "Balvanera", "San Cristóbal", "Boedo", "Parque Chacabuco", "Flores", "Liniers", "Puerto Madero",
+    "San Telmo", "Constitución", "Barracas", "La Boca", "Parque Patricios", "Nueva Pompeya", "Mataderos", "Parque Avellaneda", "Villa Lugano", "Villa Riachuelo", "Villa Soldati",
+    "Otro Barrio (CABA)" // <-- COMODÍN
+  ],
+  "GBA_NORTE": [
+    "Vicente López", "Florida", "Olivos", "San Martín", "Munro", "Martínez", "San Isidro", "Boulogne", "Villa Ballester", "San Fernando", "Victoria", "Tigre", "Nordelta / Pacheco", "Pilar / Escobar",
+    "Otra Localidad (GBA Norte)" // <-- COMODÍN
+  ],
+  "GBA_OESTE": [
+    "Tres de Febrero", "Caseros", "Ciudadela", "Ramos Mejía", "Haedo", "Morón", "Castelar", "San Justo", "Ituzaingó / Padua", "Merlo / Moreno",
+    "Otra Localidad (GBA Oeste)" // <-- COMODÍN
+  ],
+  "GBA_SUR": [
+    "Avellaneda", "Piñeyro", "Lanús", "Valentín Alsina", "Lomas de Zamora", "Banfield", "Temperley", "Quilmes", "Bernal", "Almirante Brown", "Ezeiza / Echeverría", "Berazategui / Varela",
+    "Otra Localidad (GBA Sur)" // <-- COMODÍN
+  ],
+  "INTERIOR": [
+    "Envío a Domicilio (Correo Argentino)", 
+    "Envío a Sucursal (Correo Argentino)"
+  ]
 };
 
 export default function Checkout() {
