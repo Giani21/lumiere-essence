@@ -15,15 +15,18 @@ export default function AdminProducts() {
     if (!deleteId) return
     setIsDeleting(true)
     try {
+      // Intentar borrado físico
       const { error: deleteError } = await supabase.from('products').delete().eq('id', deleteId)
+      
       if (deleteError) {
+        // Si hay conflicto por ventas (FK), archivamos el producto
         if (deleteError.code === '23503') {
           const { error: updateError } = await supabase
             .from('products')
             .update({ is_archived: true, is_active: false })
             .eq('id', deleteId)
           if (updateError) throw updateError
-          alert('Producto archivado por historial de ventas.')
+          alert('Producto archivado para preservar el historial de ventas.')
         } else throw deleteError
       }
       setProducts(products.filter(p => p.id !== deleteId))
@@ -35,11 +38,23 @@ export default function AdminProducts() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const { data } = await supabase.from('products')
-        .select(`*, product_variants(stock, price)`)
+      // Forzamos la relación explícita para evitar errores de nombres
+      const { data, error } = await supabase.from('products')
+        .select(`
+          *, 
+          product_variants (
+            stock, 
+            price
+          )
+        `)
         .eq('is_archived', false)
         .order('created_at', { ascending: false })
-      setProducts(data || [])
+      
+      if (error) {
+        console.error("Error Supabase:", error)
+      } else {
+        setProducts(data || [])
+      }
       setLoading(false)
     }
     fetchProducts()
@@ -55,7 +70,7 @@ export default function AdminProducts() {
   return (
     <div className="font-sans pb-10">
       
-      {/* --- MODAL CONFIRMACIÓN (Full Screen Mobile) --- */}
+      {/* MODAL CONFIRMACIÓN */}
       {deleteId && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-sm p-0 sm:p-4">
           <div className="bg-slate-900 border border-slate-800 p-8 w-full max-w-sm rounded-t-3xl sm:rounded-lg shadow-2xl animate-in slide-in-from-bottom duration-300">
@@ -78,7 +93,7 @@ export default function AdminProducts() {
         </div>
       )}
 
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
@@ -93,9 +108,8 @@ export default function AdminProducts() {
         </Link>
       </div>
 
-      {/* --- LISTADO (Responsive Table/Cards) --- */}
+      {/* LISTADO */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
-        {/* Header oculto en mobile */}
         <div className="hidden lg:grid grid-cols-12 bg-slate-950 p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800">
           <div className="col-span-1">Imagen</div>
           <div className="col-span-4">Producto / Marca</div>
@@ -107,13 +121,15 @@ export default function AdminProducts() {
 
         <div className="divide-y divide-slate-800">
           {products.map((product) => {
-            const totalStock = product.product_variants?.reduce((acc, v) => acc + v.stock, 0) || 0
-            const variantCount = product.product_variants?.length || 0
+            // FIX DE STOCK: Validamos que la relación exista y forzamos número
+            const variants = product.product_variants || []
+            const totalStock = variants.reduce((acc, v) => acc + Number(v.stock || 0), 0)
+            const variantCount = variants.length
             
             return (
               <div key={product.id} className="p-4 lg:p-0 lg:grid lg:grid-cols-12 items-center hover:bg-slate-800/30 transition-colors">
                 
-                {/* Imagen y Info (Mobile Layout) */}
+                {/* Info Mobile */}
                 <div className="col-span-5 flex items-center gap-4 lg:p-4">
                   <div className="w-16 h-20 lg:w-12 lg:h-12 bg-slate-800 rounded-lg overflow-hidden border border-slate-700 flex-shrink-0">
                     {product.image_url ? (
@@ -125,23 +141,26 @@ export default function AdminProducts() {
                   <div className="flex flex-col min-w-0">
                     <span className="text-slate-200 font-bold text-sm lg:text-xs truncate">{product.name}</span>
                     <span className="text-slate-500 text-[10px] font-mono mt-0.5 uppercase tracking-tighter">{product.brand}</span>
-                    {/* Badge mobile solo para stock */}
+                    
                     <div className="lg:hidden mt-2 flex gap-2">
                       <span className={`text-[8px] font-black px-2 py-0.5 rounded ${totalStock > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                        STOCK: {totalStock}
+                        TOTAL STOCK: {totalStock}
+                      </span>
+                      <span className="text-[8px] font-black px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                        {variantCount} PRESENTACIONES
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Variantes (Desktop) */}
+                {/* Escritorio: Variantes */}
                 <div className="hidden lg:col-span-2 lg:flex justify-center">
                   <span className="bg-slate-800/50 text-slate-400 px-2 py-1 rounded text-[9px] font-mono border border-slate-700 uppercase">
                     {variantCount} Variantes
                   </span>
                 </div>
 
-                {/* Stock (Desktop) */}
+                {/* Escritorio: Stock */}
                 <div className="hidden lg:col-span-2 lg:flex justify-center">
                   {totalStock > 0 ? (
                     <span className="text-emerald-400 font-mono font-bold text-sm">{totalStock}</span>
@@ -152,12 +171,12 @@ export default function AdminProducts() {
                   )}
                 </div>
 
-                {/* Status (Desktop) */}
+                {/* Escritorio: Status */}
                 <div className="hidden lg:col-span-1 lg:flex justify-center">
                   <div className={`w-2 h-2 rounded-full shadow-[0_0_8px] ${product.is_active ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-slate-600 shadow-transparent'}`}></div>
                 </div>
 
-                {/* Controles (Sticky Mobile Bottom o Right Desktop) */}
+                {/* Botones */}
                 <div className="col-span-2 flex lg:justify-end gap-2 mt-4 lg:mt-0 lg:p-4 border-t border-slate-800/50 lg:border-none pt-4 lg:pt-0">
                   <Link to={`/admin/products/edit/${product.id}`} className="flex-1 lg:flex-none p-3 lg:p-2 bg-slate-800 hover:bg-indigo-600 text-slate-400 hover:text-white rounded-xl lg:rounded transition-all flex items-center justify-center gap-2">
                     <Edit size={16} /><span className="lg:hidden text-[10px] font-bold">EDITAR</span>
