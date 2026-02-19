@@ -62,6 +62,40 @@ export default function AdminOrders() {
     setExpandedOrderId(expandedOrderId === id ? null : id)
   }
 
+  // FUNCIÓN AUXILIAR PARA PARSEAR LA DIRECCIÓN
+  const renderAddress = (addressRaw) => {
+    if (!addressRaw) return 'Retiro en Showroom / Boutique';
+    
+    try {
+      // Intentamos parsear si es un string JSON
+      const addr = typeof addressRaw === 'string' ? JSON.parse(addressRaw) : addressRaw;
+      
+      // Si el parseo resultó en un objeto con campos específicos
+      if (addr && typeof addr === 'object' && addr.street) {
+        return (
+          <div className="space-y-1 text-[11px] font-mono text-slate-200">
+            <p className="text-indigo-400 font-black uppercase text-[9px] tracking-widest mb-2 flex items-center gap-1">
+              <User size={10} /> {addr.first_name} {addr.last_name}
+            </p>
+            <p><span className="text-slate-500">CALLE:</span> {addr.street} {addr.number}</p>
+            {(addr.floor || addr.dept) && (
+              <p><span className="text-slate-500">PISO/DEPTO:</span> {addr.floor || '-'}{addr.dept || ''}</p>
+            )}
+            <p><span className="text-slate-500">ZONA:</span> {addr.neighborhood}, {addr.region}</p>
+            <p><span className="text-slate-500">CP:</span> {addr.zip}</p>
+            <p className="mt-2 pt-2 border-t border-slate-800 text-emerald-400">
+              <span className="text-slate-500">WHATSAPP:</span> {addr.phone}
+            </p>
+          </div>
+        );
+      }
+    } catch (e) {
+      // Si no es JSON, cae aquí y se muestra como texto plano
+    }
+    
+    return <p className="text-slate-200 text-xs font-mono italic">{addressRaw}</p>;
+  }
+
   const filteredOrders = filter === 'all' 
     ? orders 
     : orders.filter(o => o.status === filter)
@@ -76,7 +110,6 @@ export default function AdminOrders() {
   return (
     <div className="font-sans pb-20 px-2 lg:px-0">
       
-      {/* HEADER Y FILTROS */}
       <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 mb-6 space-y-6">
         <div className="flex justify-between items-start">
           <div>
@@ -89,7 +122,6 @@ export default function AdminOrders() {
           </div>
         </div>
         
-        {/* Filtros con Scroll Horizontal en Mobile */}
         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar -mx-2 px-2 lg:mx-0 lg:px-0">
           {['all', 'pending', 'paid', 'shipped', 'delivered'].map((f) => (
             <button
@@ -107,7 +139,6 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* LISTADO DE ÓRDENES */}
       <div className="space-y-4">
         {filteredOrders.map((order) => {
           const isExpanded = expandedOrderId === order.id
@@ -118,7 +149,6 @@ export default function AdminOrders() {
           return (
             <div key={order.id} className={`bg-slate-900 border transition-all duration-300 rounded-xl overflow-hidden ${isExpanded ? 'border-indigo-500 shadow-2xl' : 'border-slate-800'}`}>
               
-              {/* Card Header / Resumen Principal */}
               <div 
                 className="p-5 cursor-pointer flex justify-between items-center"
                 onClick={() => toggleRow(order.id)}
@@ -126,7 +156,7 @@ export default function AdminOrders() {
                 <div className="flex flex-col gap-1">
                   <span className="text-slate-500 font-mono text-[10px] uppercase">#{String(order.id).split('-')[0]}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-100 font-bold text-lg font-mono">${order.total_amount.toLocaleString('es-AR')}</span>
+                    <span className="text-slate-100 font-bold text-lg font-mono">${Number(order.total_amount).toLocaleString('es-AR')}</span>
                     <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[8px] font-black tracking-[0.2em] border ${config.bg} ${config.color} border-current/20`}>
                       <StatusIcon size={10} /> {config.label}
                     </span>
@@ -138,12 +168,10 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              {/* Contenido Expandible */}
               {isExpanded && (
                 <div className="border-t border-slate-800 bg-slate-950/50 animate-in slide-in-from-top duration-300">
                   <div className="p-5 space-y-8">
                     
-                    {/* Items */}
                     <div>
                       <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
                         <Package size={14} className="text-indigo-400" /> Detalle de Compra
@@ -163,7 +191,7 @@ export default function AdminOrders() {
                               </p>
                               <div className="flex justify-between items-end mt-1">
                                 <span className="text-indigo-400 font-mono text-xs">x{item.quantity}</span>
-                                <span className="text-slate-300 font-mono text-xs">${item.unit_price.toLocaleString()}</span>
+                                <span className="text-slate-300 font-mono text-xs">${Number(item.unit_price).toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -171,35 +199,31 @@ export default function AdminOrders() {
                       </div>
                     </div>
 
-                    {/* Envío */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
                           <MapPin size={14} className="text-rose-400" /> Logística de Entrega
                         </h3>
-                        <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
-                          <p className="text-slate-200 text-xs leading-relaxed font-mono italic">
-                            {order.shipping_address || 'Retiro en Showroom / Boutique'}
-                          </p>
+                        <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-inner">
+                          {renderAddress(order.shipping_address)}
                         </div>
                       </div>
 
-                      {/* Botonera de Estados (Mobile Friendly) */}
                       <div className="space-y-3">
                         <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Acción de Gestión</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {order.status === 'pending' && (
-                            <button onClick={() => handleStatusChange(order.id, 'paid')} className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 active:scale-95 transition-all">
+                            <button onClick={() => handleStatusChange(order.id, 'paid')} className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
                               MARCAR COMO PAGADO
                             </button>
                           )}
                           {order.status === 'paid' && (
-                            <button onClick={() => handleStatusChange(order.id, 'shipped')} className="w-full py-3 bg-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-purple-900/20 active:scale-95 transition-all">
+                            <button onClick={() => handleStatusChange(order.id, 'shipped')} className="w-full py-3 bg-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
                               INICIAR ENVÍO
                             </button>
                           )}
                           {order.status === 'shipped' && (
-                            <button onClick={() => handleStatusChange(order.id, 'delivered')} className="w-full py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-900/20 active:scale-95 transition-all">
+                            <button onClick={() => handleStatusChange(order.id, 'delivered')} className="w-full py-3 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
                               CONFIRMAR ENTREGA
                             </button>
                           )}
@@ -211,7 +235,6 @@ export default function AdminOrders() {
                         </div>
                       </div>
                     </div>
-
                   </div>
                 </div>
               )}
