@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Send, Sparkles, Trash2, User, Shield, Loader2, ArrowRight } from 'lucide-react'
+import { X, Send, Sparkles, Trash2, User, Shield, Loader2, ArrowRight, Lock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { askIA } from '../lib/gemini'
 import ProductCard from './ProductCard'
@@ -15,6 +15,9 @@ export default function SommelierChat() {
   const [charCount, setCharCount] = useState(0)
   const [rateInfo, setRateInfo] = useState({ used: 0, limit: 7, resetIn: 0 })
   const scrollRef = useRef(null)
+  
+  // --- NUEVO: Estado de autenticación ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('lumiere_chat_history')
@@ -23,13 +26,29 @@ export default function SommelierChat() {
     ]
   })
 
+  // Verificar sesión cuando el componente se monta y suscribirse a cambios
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+    }
+    
+    checkSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   useEffect(() => {
     // Emitimos un evento personalizado para que el Navbar sepa si el chat está abierto
     const event = new CustomEvent('chat-status-change', { detail: { isOpen } });
     window.dispatchEvent(event);
   
     // Opcional: Bloquear el scroll del body en móvil cuando el chat está abierto
-    if (window.innerWidth < 1024) { // solo para móviles/tablets
+    if (window.innerWidth < 1024) { 
       document.body.style.overflow = isOpen ? 'hidden' : 'unset';
     }
   }, [isOpen]);
@@ -54,16 +73,16 @@ export default function SommelierChat() {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAuthenticated) {
       setRateInfo(getRateLimitInfo());
       const interval = setInterval(() => setRateInfo(getRateLimitInfo()), 60000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, messages]);
+  }, [isOpen, messages, isAuthenticated]);
 
   const handleSend = async (e) => {
     if (e) e.preventDefault()
-    if (!input.trim() || loading) return
+    if (!input.trim() || loading || !isAuthenticated) return
 
     const securityCheck = checkRateLimit();
     if (!securityCheck.allowed) {
@@ -108,7 +127,7 @@ export default function SommelierChat() {
 
   return (
     <>
-      {/* Botón Flotante - Ajustado tamaño para móvil */}
+      {/* Botón Flotante */}
       <button
         onClick={() => setIsOpen(true)}
         className={`fixed bottom-6 right-6 lg:bottom-8 lg:right-8 w-14 h-14 lg:w-16 lg:h-16 bg-primary text-accent rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 z-50 hover:scale-110 ${isOpen ? 'scale-0' : 'scale-100'}`}
@@ -124,8 +143,42 @@ export default function SommelierChat() {
         inset-0 lg:inset-auto lg:bottom-6 lg:right-6 lg:w-[420px] lg:h-[650px] lg:max-h-[85vh] lg:rounded-sm lg:border lg:border-gray-100 lg:shadow-2xl
       `}>
 
+        {/* --- NUEVO: Auth Wall (Muro de Inicio de Sesión) --- */}
+        {!isAuthenticated && (
+          <div className="absolute inset-0 z-[60] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+            <div className="bg-white p-8 rounded-sm shadow-xl border border-gray-100 max-w-[320px] w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="w-16 h-16 bg-[#FAF9F7] rounded-full flex items-center justify-center mb-6">
+                <Lock size={28} className="text-primary" />
+              </div>
+              <h3 className="font-serif text-2xl text-primary mb-2 italic">Exclusivo</h3>
+              <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                El servicio de Sommelier IA es exclusivo para clientes de Lumière Essence. Inicie sesión para recibir asesoramiento personalizado.
+              </p>
+              <a 
+                href="/login" // <-- Cambia esto por la ruta real de tu login
+                className="w-full py-3.5 bg-primary text-accent text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors mb-3 flex justify-center"
+              >
+                Iniciar Sesión
+              </a>
+              <a 
+                href="/register" // <-- Cambia esto por tu ruta de registro si tenés una separada
+                className="w-full py-3.5 bg-transparent border border-gray-200 text-primary text-[11px] font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors flex justify-center"
+              >
+                Crear Cuenta
+              </a>
+            </div>
+            {/* Botón para cerrar el chat por detrás del auth wall */}
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="absolute top-6 right-6 p-2 bg-white rounded-full shadow-md text-gray-400 hover:text-primary transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        )}
+
         {/* Overlay de Confirmación para borrar chat */}
-        {showClearConfirm && (
+        {showClearConfirm && isAuthenticated && (
           <div className="absolute inset-0 bg-black/40 z-[80] flex items-center justify-center backdrop-blur-sm transition-all rounded-sm">
             <div className="bg-white p-6 shadow-2xl max-w-[280px] w-full mx-4 border border-gray-100 text-center animate-in fade-in zoom-in duration-200">
               <div className="w-12 h-12 bg-[#FAF9F7] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -152,7 +205,7 @@ export default function SommelierChat() {
           </div>
         )}
 
-        {/* Header - Más alto en móvil para dejar espacio al notch/status bar */}
+        {/* Header */}
         <div className="bg-primary px-6 pt-12 pb-5 lg:pt-5 lg:py-5 flex justify-between items-center shrink-0 relative z-10">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent/30 shrink-0">
@@ -164,7 +217,7 @@ export default function SommelierChat() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setShowClearConfirm(true)} className="p-2 text-gray-400 hover:text-white transition-colors"><Trash2 size={16} /></button>
+            <button onClick={() => setShowClearConfirm(true)} disabled={!isAuthenticated} className="p-2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"><Trash2 size={16} /></button>
             <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-white transition-colors"><X size={20} /></button>
           </div>
         </div>
@@ -177,8 +230,8 @@ export default function SommelierChat() {
           </div>
         </div>
 
-        {/* Mensajes - Padding ajustado para móvil */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 lg:space-y-8 bg-white custom-scrollbar">
+        {/* Mensajes */}
+        <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 lg:space-y-8 bg-white custom-scrollbar ${!isAuthenticated ? 'blur-sm pointer-events-none' : ''}`}>
           {messages.map((msg, i) => (
             <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`flex gap-3 max-w-[90%] lg:max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
@@ -204,7 +257,7 @@ export default function SommelierChat() {
                 </div>
               </div>
 
-              {/* Recomendaciones - Slider con mejor visual en móvil */}
+              {/* Recomendaciones */}
               {msg.recommendations?.length > 0 && (
                 <div className="mt-4 w-full flex gap-4 overflow-x-auto pb-4 pl-11 snap-x snap-mandatory scrollbar-hide">
                   {msg.recommendations.map(perfume => (
@@ -228,24 +281,24 @@ export default function SommelierChat() {
           )}
         </div>
 
-        {/* Input con área segura para teclados móviles */}
+        {/* Input con área segura */}
         <div className="p-4 lg:p-6 bg-white border-t border-gray-50 pb-8 lg:pb-6 relative z-10">
           <form onSubmit={handleSend} className="space-y-3">
             <div className="relative flex items-center">
               <input
                 type="text" value={input} maxLength={255}
                 onChange={(e) => { setInput(e.target.value); setCharCount(e.target.value.length); }}
-                placeholder={isBlocked ? "Límite alcanzado" : "Consultar al sommelier..."}
-                disabled={isBlocked}
-                className="w-full bg-[#FAF9F7] border border-gray-100 py-4 lg:py-3.5 pl-5 pr-12 text-sm lg:text-xs focus:outline-none focus:border-accent focus:bg-white transition-all rounded-full lg:rounded-sm"
+                placeholder={isBlocked || !isAuthenticated ? "Inicie sesión para consultar..." : "Consultar al sommelier..."}
+                disabled={isBlocked || !isAuthenticated}
+                className="w-full bg-[#FAF9F7] border border-gray-100 py-4 lg:py-3.5 pl-5 pr-12 text-sm lg:text-xs focus:outline-none focus:border-accent focus:bg-white transition-all rounded-full lg:rounded-sm disabled:opacity-60 disabled:bg-gray-100"
               />
-              <button type="submit" disabled={loading || !input.trim() || isBlocked} className="absolute right-2 p-2.5 bg-primary text-accent rounded-full lg:bg-transparent lg:text-primary hover:text-accent disabled:opacity-20 transition-colors">
+              <button type="submit" disabled={loading || !input.trim() || isBlocked || !isAuthenticated} className="absolute right-2 p-2.5 bg-primary text-accent rounded-full lg:bg-transparent lg:text-primary hover:text-accent disabled:opacity-20 transition-colors">
                 <ArrowRight size={18} />
               </button>
             </div>
             <div className="flex justify-between items-center px-2">
               <span className="text-[8px] uppercase tracking-[0.2em] text-gray-300">{charCount} / 255</span>
-              {isBlocked && <span className="text-[8px] text-red-400 uppercase font-bold tracking-tighter">Espera unos minutos</span>}
+              {isBlocked && isAuthenticated && <span className="text-[8px] text-red-400 uppercase font-bold tracking-tighter">Espera unos minutos</span>}
             </div>
           </form>
         </div>
