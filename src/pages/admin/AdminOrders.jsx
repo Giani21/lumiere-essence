@@ -124,7 +124,7 @@ export default function AdminOrders() {
                 onClick={() => toggleRow(order.id)}
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-slate-500 font-mono text-[10px] uppercase">#{order.id.split('-')[0]}</span>
+                  <span className="text-slate-500 font-mono text-[10px] uppercase">#{String(order.id).split('-')[0]}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-slate-100 font-bold text-lg font-mono">${order.total_amount.toLocaleString('es-AR')}</span>
                     <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[8px] font-black tracking-[0.2em] border ${config.bg} ${config.color} border-current/20`}>

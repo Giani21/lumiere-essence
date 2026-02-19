@@ -212,7 +212,7 @@ export default function Dashboard() {
             {allOrders.slice(0, 8).map((order) => (
               <div key={order.id} className="p-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors flex justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-slate-200 font-bold text-xs font-mono tracking-tighter">#{order.id.split('-')[0]}</span>
+                  <span className="text-slate-200 font-bold text-xs font-mono tracking-tighter">#{String(order.id).split('-')[0]}</span>
                   <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex flex-col items-end">
