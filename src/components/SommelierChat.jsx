@@ -24,6 +24,17 @@ export default function SommelierChat() {
   })
 
   useEffect(() => {
+    // Emitimos un evento personalizado para que el Navbar sepa si el chat está abierto
+    const event = new CustomEvent('chat-status-change', { detail: { isOpen } });
+    window.dispatchEvent(event);
+  
+    // Opcional: Bloquear el scroll del body en móvil cuando el chat está abierto
+    if (window.innerWidth < 1024) { // solo para móviles/tablets
+      document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     localStorage.setItem('lumiere_chat_history', JSON.stringify(messages))
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages])
@@ -53,13 +64,13 @@ export default function SommelierChat() {
   const handleSend = async (e) => {
     if (e) e.preventDefault()
     if (!input.trim() || loading) return
-    
+
     const securityCheck = checkRateLimit();
     if (!securityCheck.allowed) {
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
+      setMessages(prev => [...prev, {
+        role: 'bot',
         content: `Límite de seguridad alcanzado. Intente nuevamente en unos minutos.`,
-        recommendations: [] 
+        recommendations: []
       }]);
       setRateInfo(getRateLimitInfo());
       return;
@@ -90,19 +101,27 @@ export default function SommelierChat() {
 
   return (
     <>
-      <button 
-        onClick={() => setIsOpen(true)} 
-        className={`fixed bottom-8 right-8 w-16 h-16 bg-primary text-accent rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 z-50 hover:scale-110 ${isOpen ? 'scale-0' : 'scale-100'}`}
+      {/* Botón Flotante - Ajustado tamaño para móvil */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className={`fixed bottom-6 right-6 lg:bottom-8 lg:right-8 w-14 h-14 lg:w-16 lg:h-16 bg-primary text-accent rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 z-50 hover:scale-110 ${isOpen ? 'scale-0' : 'scale-100'}`}
       >
-        <Sparkles size={24} />
+        <Sparkles size={22} className="lg:hidden" />
+        <Sparkles size={24} className="hidden lg:block" />
       </button>
 
-      <div className={`fixed bottom-6 right-6 w-[95vw] sm:w-[420px] h-[600px] max-h-[85vh] bg-white shadow-2xl z-[60] transition-all duration-500 flex flex-col rounded-sm border border-gray-100 overflow-hidden ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0 pointer-events-none'}`}>
-        
-        {/* Header con LOGO CIRCULAR GRANDE */}
-        <div className="bg-primary px-6 py-5 flex justify-between items-center shrink-0">
+      {/* Contenedor del Chat */}
+      {/* CAMBIO CLAVE: En móvil usamos inset-0 para que ocupe todo, en desktop mantenemos el tamaño fijo */}
+      <div className={`
+        fixed z-[70] transition-all duration-500 flex flex-col bg-white
+        ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none lg:translate-y-12'}
+        inset-0 lg:inset-auto lg:bottom-6 lg:right-6 lg:w-[420px] lg:h-[650px] lg:max-h-[85vh] lg:rounded-sm lg:border lg:border-gray-100 lg:shadow-2xl
+      `}>
+
+        {/* Header - Más alto en móvil para dejar espacio al notch/status bar */}
+        <div className="bg-primary px-6 pt-12 pb-5 lg:pt-5 lg:py-5 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent/30 shrink-0">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent/30 shrink-0">
               <img src="/images/Logo.png" alt="Lumière" className="w-full h-full object-cover" />
             </div>
             <div>
@@ -110,13 +129,13 @@ export default function SommelierChat() {
               <p className="text-[8px] text-accent uppercase tracking-[0.3em] mt-1 font-bold">Lumière AI</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-             <button onClick={() => setShowClearConfirm(true)} className="p-2 text-gray-500 hover:text-white transition-colors"><Trash2 size={16} /></button>
-             <button onClick={() => setIsOpen(false)} className="p-2 text-gray-500 hover:text-white transition-colors"><X size={18} /></button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setShowClearConfirm(true)} className="p-2 text-gray-400 hover:text-white transition-colors"><Trash2 size={16} /></button>
+            <button onClick={() => setIsOpen(false)} className="p-2 text-gray-400 hover:text-white transition-colors"><X size={20} /></button>
           </div>
         </div>
 
-        {/* Seguridad */}
+        {/* Barra de Seguridad Sutil */}
         <div className="bg-[#FAF9F7] px-6 py-2 border-b border-gray-100 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Shield size={10} className="text-accent" />
@@ -124,37 +143,42 @@ export default function SommelierChat() {
           </div>
         </div>
 
-        {/* Mensajes */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8 bg-white custom-scrollbar">
+        {/* Mensajes - Padding ajustado para móvil */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 lg:space-y-8 bg-white custom-scrollbar">
           {messages.map((msg, i) => (
             <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`flex gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                
-                {/* Avatar circular en mensajes */}
-                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center overflow-hidden border ${
-                  msg.role === 'user' ? 'bg-gray-100 border-transparent' : 'bg-white border-gray-100'
-                }`}>
+              <div className={`flex gap-3 max-w-[90%] lg:max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+
+                <div className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full shrink-0 flex items-center justify-center overflow-hidden border ${msg.role === 'user' ? 'bg-gray-100 border-transparent' : 'bg-white border-gray-100'
+                  }`}>
                   {msg.role === 'user' ? (
-                    <User size={16} className="text-gray-400" />
+                    <User size={14} className="text-gray-400" />
                   ) : (
                     <img src="/images/Logo.png" alt="L" className="w-full h-full object-cover" />
                   )}
                 </div>
-                
-                <div className={`px-5 py-3.5 text-sm leading-relaxed ${
-                  msg.role === 'user' 
-                    ? 'bg-primary text-white rounded-2xl rounded-tr-none shadow-sm font-light' 
-                    : 'bg-[#F9F9F9] text-gray-700 rounded-2xl rounded-tl-none border border-gray-50'
-                }`}>
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+
+                <div className={`px-4 py-3 text-sm leading-relaxed shadow-sm ${msg.role === 'user'
+                  ? 'bg-primary text-white rounded-2xl rounded-tr-none font-light'
+                  : 'bg-[#F9F9F9] text-gray-700 rounded-2xl rounded-tl-none border border-gray-100'
+                  }`}>
+                  <div className="prose prose-sm prose-invert max-w-none">
+                    <ReactMarkdown>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
 
-              {/* Recomendaciones */}
+              {/* Recomendaciones - Slider con mejor visual en móvil */}
               {msg.recommendations?.length > 0 && (
-                <div className="mt-6 w-full flex gap-4 overflow-x-auto pb-4 pl-12 scrollbar-hide">
+                <div className="mt-4 w-full flex gap-4 overflow-x-auto pb-4 pl-11 snap-x snap-mandatory scrollbar-hide">
                   {msg.recommendations.map(perfume => (
-                    <div key={perfume.id} className="min-w-[190px] max-w-[210px] flex-shrink-0">
+                    <div
+                      key={perfume.id}
+                      className="min-w-[170px] max-w-[190px] flex-shrink-0 snap-start"
+                      onClick={() => setIsOpen(false)} // <--- ESTO CIERRA EL CHAT AL TOCAR EL PRODUCTO
+                    >
                       <ProductCard product={perfume} />
                     </div>
                   ))}
@@ -162,26 +186,32 @@ export default function SommelierChat() {
               )}
             </div>
           ))}
-          {loading && <div className="ml-12 text-[9px] text-accent animate-pulse uppercase tracking-[0.3em]">Procesando notas...</div>}
+          {loading && (
+            <div className="flex items-center gap-2 ml-11">
+              <Loader2 size={12} className="animate-spin text-accent" />
+              <span className="text-[9px] text-accent uppercase tracking-[0.2em]">Analizando fragancias...</span>
+            </div>
+          )}
         </div>
 
-        {/* Input */}
-        <div className="p-6 bg-white border-t border-gray-50">
+        {/* Input con área segura para teclados móviles */}
+        <div className="p-4 lg:p-6 bg-white border-t border-gray-50 pb-8 lg:pb-6">
           <form onSubmit={handleSend} className="space-y-3">
             <div className="relative flex items-center">
-              <input 
+              <input
                 type="text" value={input} maxLength={255}
                 onChange={(e) => { setInput(e.target.value); setCharCount(e.target.value.length); }}
-                placeholder={isBlocked ? "Límite alcanzado" : "Escriba su consulta aquí..."}
+                placeholder={isBlocked ? "Límite alcanzado" : "Consultar al sommelier..."}
                 disabled={isBlocked}
-                className="w-full bg-[#FAF9F7] border border-gray-100 py-3.5 pl-5 pr-12 text-xs focus:outline-none focus:border-accent focus:bg-white transition-all rounded-sm"
+                className="w-full bg-[#FAF9F7] border border-gray-100 py-4 lg:py-3.5 pl-5 pr-12 text-sm lg:text-xs focus:outline-none focus:border-accent focus:bg-white transition-all rounded-full lg:rounded-sm"
               />
-              <button type="submit" disabled={loading || !input.trim() || isBlocked} className="absolute right-3 p-2 text-primary hover:text-accent disabled:opacity-20 transition-colors">
-                <ArrowRight size={20} />
+              <button type="submit" disabled={loading || !input.trim() || isBlocked} className="absolute right-2 p-2.5 bg-primary text-accent rounded-full lg:bg-transparent lg:text-primary hover:text-accent disabled:opacity-20 transition-colors">
+                <ArrowRight size={18} />
               </button>
             </div>
-            <div className="flex justify-between items-center px-1">
-               <span className="text-[8px] uppercase tracking-[0.2em] text-gray-300">{charCount} / 255</span>
+            <div className="flex justify-between items-center px-2">
+              <span className="text-[8px] uppercase tracking-[0.2em] text-gray-300">{charCount} / 255</span>
+              {isBlocked && <span className="text-[8px] text-red-400 uppercase font-bold tracking-tighter">Espera unos minutos</span>}
             </div>
           </form>
         </div>
