@@ -48,9 +48,14 @@ export default function Navbar() {
     setIsOpen(false);
   }
 
+  const handleSignOut = async () => {
+    await signOut();
+    setIsOpen(false);
+    navigate('/');
+  }
+
   return (
     <>
-      {/* NAVBAR PRINCIPAL */}
       <nav className={`
         bg-primary shadow-premium sticky top-0 z-[80] border-b border-[#ffffff10]
         transition-transform duration-500 ease-in-out
@@ -90,25 +95,22 @@ export default function Navbar() {
             {/* ICONOS Y LINKS */}
             <div className="flex items-center justify-end gap-4 md:gap-7 text-light">
               
-              {/* Navegación Directa (Siempre visible) */}
               <div className="flex items-center gap-4 md:gap-8">
                 <Link to="/" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/')}`}>Inicio</Link>
                 <Link to="/catalog" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/catalog')}`}>Catálogo</Link>
               </div>
 
               <div className="flex items-center gap-3 md:gap-6">
-                {/* Sommelier (Desktop) */}
                 <button onClick={openAIChat} className="hidden md:flex hover:text-accent flex-col items-center group">
                   <Sparkles size={20} strokeWidth={1.5} className="group-hover:animate-pulse" />
                   <span className="text-[7px] uppercase tracking-widest mt-1 hidden lg:block opacity-50">Sommelier</span>
                 </button>
 
-                {/* CARRITO (Fuera - Siempre visible en móvil y PC) */}
                 <Link to="/cart" className="group relative hover:text-accent flex flex-col items-center">
                   <div className="relative">
                     <ShoppingBag size={20} strokeWidth={1.5} />
                     {totalItems > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-accent text-primary text-[8px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                      <span className="absolute -top-2 -right-2 bg-accent text-primary text-[8px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-primary">
                         {totalItems}
                       </span>
                     )}
@@ -116,18 +118,40 @@ export default function Navbar() {
                   <span className="text-[7px] uppercase tracking-widest mt-1 hidden lg:block opacity-50">Mi Bolsa</span>
                 </Link>
 
-                {/* Wishlist & Perfil (Desktop) */}
+                {/* Wishlist & Perfil (Desktop) con Dropdown de Usuario */}
                 <div className="hidden lg:flex items-center gap-6">
                   <Link to="/wishlist" className="hover:text-accent"><Heart size={20} strokeWidth={1.5} /></Link>
-                  <Link to="/orders" className="hover:text-accent"><Package size={20} strokeWidth={1.5} /></Link>
-                  {user && (
-                    <div className="w-9 h-9 rounded-full bg-accent text-primary flex items-center justify-center text-xs font-bold uppercase">
-                      {user.email?.charAt(0)}
+                  
+                  {user ? (
+                    <div className="relative group/user">
+                      <button className="w-9 h-9 rounded-full bg-accent text-primary flex items-center justify-center text-xs font-bold uppercase transition-transform group-hover/user:scale-105">
+                        {user.email?.charAt(0)}
+                      </button>
+                      
+                      {/* Menu Desplegable Desktop */}
+                      <div className="absolute right-0 mt-2 w-48 bg-white shadow-2xl rounded-sm py-2 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-300 translate-y-2 group-hover/user:translate-y-0 z-[90]">
+                        <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                          <p className="text-[10px] text-primary font-bold truncate">{user.email}</p>
+                        </div>
+                        <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-[10px] text-gray-500 hover:text-accent uppercase tracking-widest transition-colors font-bold">
+                          <Package size={14} /> Mis Pedidos
+                        </Link>
+                        <button 
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-[10px] text-gray-500 hover:text-red-500 uppercase tracking-widest transition-colors font-bold"
+                        >
+                          <LogOut size={14} /> Cerrar Sesión
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <Link to="/login" className="hover:text-accent flex flex-col items-center group">
+                      <User size={20} strokeWidth={1.5} />
+                      <span className="text-[7px] uppercase tracking-widest mt-1">Ingresar</span>
+                    </Link>
                   )}
                 </div>
 
-                {/* Menú Hamburguesa */}
                 <button onClick={() => setIsOpen(true)} className="lg:hidden text-light p-1">
                   <Menu size={24} />
                 </button>
@@ -148,12 +172,10 @@ export default function Navbar() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-8">
-            {/* Categorías Principales */}
             <Link to="/" onClick={() => setIsOpen(false)} className="block text-4xl font-serif text-light italic border-b border-white/5 py-8">Inicio</Link>
             <Link to="/catalog" onClick={() => setIsOpen(false)} className="block text-4xl font-serif text-light italic border-b border-white/5 py-8">Catálogo</Link>
             
             <div className="flex flex-col">
-              {/* CARRITO (Dentro del menú con línea divisoria) */}
               <Link to="/cart" onClick={() => setIsOpen(false)} className="flex items-center justify-between text-gray-300 text-sm uppercase tracking-widest py-6 border-b border-white/5">
                 <div className="flex items-center gap-4"><ShoppingBag size={18}/> Mi Bolsa</div>
                 {totalItems > 0 && <span className="text-accent font-bold text-[10px]">{totalItems} ÍTEMS</span>}
@@ -175,7 +197,7 @@ export default function Navbar() {
 
           <div className="p-8 border-t border-white/10">
             {user ? (
-              <button onClick={() => { signOut(); setIsOpen(false); navigate('/'); }} className="w-full py-4 bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-widest rounded-sm border border-red-500/20">
+              <button onClick={handleSignOut} className="w-full py-4 bg-red-500/10 text-red-500 text-xs font-bold uppercase tracking-widest rounded-sm border border-red-500/20">
                 Cerrar Sesión
               </button>
             ) : (
