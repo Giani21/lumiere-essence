@@ -5,7 +5,6 @@ import { ShoppingBag, Heart, ChevronRight, Ruler, Truck, ShieldCheck, Check } fr
 import { useCart } from '../context/CartContext'
 
 export default function ProductDetail() {
-  // 1. CAMBIO: Leemos 'slug' en lugar de 'id'
   const { slug } = useParams()
   
   const [product, setProduct] = useState(null)
@@ -17,6 +16,11 @@ export default function ProductDetail() {
   const [isWishlisted, setIsWishlisted] = useState(false)
   
   const { addToCart } = useCart()
+
+  // Helper para formatear el tamaño o mostrar "SET"
+  const formatSize = (ml) => {
+    return ml < 1 ? "SET / KIT" : `${ml} ML`;
+  };
 
   useEffect(() => {
     async function getProductDetail() {
@@ -33,7 +37,7 @@ export default function ProductDetail() {
               sku
             )
           `)
-          .eq('slug', slug) // 2. CAMBIO: Buscamos por slug
+          .eq('slug', slug)
           .single()
 
         if (error) throw error
@@ -46,7 +50,6 @@ export default function ProductDetail() {
             setSelectedVariant(sortedVariants[0])
           }
 
-          // 3. CAMBIO: Chequeamos wishlist usando el ID real recuperado de la DB
           const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
           setIsWishlisted(wishlist.some(item => item.id === data.id))
         }
@@ -60,16 +63,13 @@ export default function ProductDetail() {
     if (slug) {
       getProductDetail()
     }
-  }, [slug]) // 4. CAMBIO: Dependencia del efecto es el slug
+  }, [slug])
 
-  // Lógica de Wishlist
   const toggleWishlist = () => {
     if (!product) return
-
     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
     let updatedWishlist
 
-    // Usamos product.id para la lógica interna (es lo más seguro)
     if (isWishlisted) {
       updatedWishlist = wishlist.filter(item => item.id !== product.id)
       setIsWishlisted(false)
@@ -80,22 +80,18 @@ export default function ProductDetail() {
         brand: product.brand,
         image_url: product.image_url,
         price: selectedVariant?.price,
-        slug: product.slug // 5. CAMBIO: Guardamos el slug para futuros links
+        slug: product.slug
       }
       updatedWishlist = [...wishlist, wishItem]
       setIsWishlisted(true)
     }
-
     localStorage.setItem('wishlist', JSON.stringify(updatedWishlist))
   }
 
   const handleAddToCart = () => {
     addToCart(product, selectedVariant)
     setShowToast(true)
-    
-    setTimeout(() => {
-      setShowToast(false)
-    }, 3000)
+    setTimeout(() => setShowToast(false), 3000)
   }
 
   if (loading) {
@@ -121,7 +117,7 @@ export default function ProductDetail() {
       
       {/* --- TOAST NOTIFICATION --- */}
       <div 
-        className={`fixed top-24 right-4 sm:right-12 z-50 bg-primary border border-accent/30 text-light px-6 py-4 shadow-2xl flex items-center gap-4 transform transition-all duration-500 ease-out ${
+        className={`fixed top-24 right-4 sm:right-12 z-[100] bg-primary border border-accent/30 text-light px-6 py-4 shadow-2xl flex items-center gap-4 transform transition-all duration-500 ease-out ${
           showToast ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0 pointer-events-none'
         }`}
       >
@@ -130,16 +126,11 @@ export default function ProductDetail() {
         </div>
         <div>
           <p className="text-xs tracking-[0.2em] uppercase font-bold text-accent">Añadido al carrito</p>
-          <p className="text-[10px] text-gray-400 mt-1">
-            {product.name} ({selectedVariant?.size_ml}ml)
+          <p className="text-[10px] text-gray-400 mt-1 uppercase">
+            {product.name} ({formatSize(selectedVariant?.size_ml)})
           </p>
         </div>
-        <Link 
-          to="/cart" 
-          className="ml-6 text-[10px] tracking-widest uppercase border-b border-gray-500 hover:text-accent hover:border-accent transition-colors pb-0.5"
-        >
-          Ver Bolsa
-        </Link>
+        <Link to="/cart" className="ml-6 text-[10px] tracking-widest uppercase border-b border-gray-500 hover:text-accent pb-0.5">Ver Bolsa</Link>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
@@ -162,10 +153,6 @@ export default function ProductDetail() {
                 src={product.image_url || '/images/no-image.jpg'} 
                 alt={product.name}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/images/no-image.jpg';
-                }}
               />
               <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-1.5 text-[9px] tracking-[0.3em] uppercase text-primary font-bold">
                 {product.category || 'Eau de Parfum'}
@@ -183,52 +170,53 @@ export default function ProductDetail() {
               {product.name}
             </h1>
             <p className="text-xs text-gray-500 tracking-[0.2em] uppercase mb-8">
-              {product.gender} • Colección Clásica
+              {product.gender} • Colección Boutique
             </p>
 
-            <div className="mb-10">
+            <div className="mb-10 flex items-center">
               <span className="font-serif text-3xl text-primary">
                 ${selectedVariant?.price.toLocaleString('es-AR')}
               </span>
               {selectedVariant?.stock > 0 ? (
-                <span className="ml-4 text-[10px] text-green-600 tracking-widest uppercase font-medium bg-green-50 px-2 py-1 rounded-sm">
+                <span className="ml-4 text-[9px] text-emerald-600 tracking-[0.2em] uppercase font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                   En Stock
                 </span>
               ) : (
-                <span className="ml-4 text-[10px] text-red-500 tracking-widest uppercase font-medium bg-red-50 px-2 py-1 rounded-sm">
+                <span className="ml-4 text-[9px] text-rose-500 tracking-[0.2em] uppercase font-bold bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
                   Agotado
                 </span>
               )}
             </div>
 
+            {/* SELECTOR DE TAMAÑO / TIPO */}
             <div className="mb-10">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-primary font-medium tracking-widest uppercase">Seleccionar Tamaño</span>
-                <button className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-accent transition-colors uppercase tracking-widest">
+                <span className="text-[10px] text-primary font-bold tracking-[0.2em] uppercase">Presentación</span>
+                <button className="flex items-center gap-1 text-[9px] text-gray-400 hover:text-accent transition-colors uppercase tracking-widest font-medium">
                   <Ruler size={12} /> Guía de tamaños
                 </button>
               </div>
               
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-3">
                 {variants.map((variant) => (
                   <button
                     key={variant.id}
                     onClick={() => setSelectedVariant(variant)}
-                    className={`px-6 py-3 border text-xs tracking-[0.2em] transition-all duration-300 ${
+                    className={`px-5 py-3 border text-[10px] font-black tracking-[0.2em] uppercase transition-all duration-300 ${
                       selectedVariant?.id === variant.id
-                        ? 'border-accent bg-accent/5 text-primary font-bold shadow-sm'
-                        : 'border-gray-200 text-gray-500 hover:border-accent/50'
+                        ? 'border-accent bg-accent/5 text-primary shadow-sm'
+                        : 'border-gray-200 text-gray-400 hover:border-accent/30'
                     }`}
                   >
-                    {variant.size_ml} ML
+                    {formatSize(variant.size_ml)}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mb-12">
-              <p className="text-gray-600 text-sm leading-relaxed font-light">
-                {product.description || 'Una fragancia inolvidable que define tu presencia.'}
+            <div className="mb-12 border-l border-accent/20 pl-6">
+              <p className="text-gray-600 text-sm leading-relaxed font-light italic">
+                {product.description}
               </p>
             </div>
 
@@ -237,7 +225,7 @@ export default function ProductDetail() {
               <button 
                 onClick={handleAddToCart}
                 disabled={!selectedVariant || selectedVariant.stock === 0}
-                className="relative flex-1 bg-primary text-light overflow-hidden flex items-center justify-center gap-3 py-4 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.2em] text-xs uppercase disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer group active:scale-[0.98]"
+                className="relative flex-1 bg-primary text-light overflow-hidden flex items-center justify-center gap-3 py-4.5 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.3em] text-[10px] uppercase disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed group active:scale-[0.98]"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]"></div>
                 <span className="relative z-10">Añadir al Carrito</span>
@@ -246,10 +234,10 @@ export default function ProductDetail() {
               
               <button 
                 onClick={toggleWishlist}
-                className={`w-14 flex items-center justify-center border transition-all duration-300 ${
+                className={`w-14 flex items-center justify-center border transition-all duration-500 ${
                   isWishlisted 
-                    ? 'bg-red-50 border-red-200 text-red-500' 
-                    : 'border-gray-200 text-gray-400 hover:border-accent hover:text-accent'
+                    ? 'bg-rose-50 border-rose-200 text-rose-500 shadow-inner' 
+                    : 'border-gray-200 text-gray-300 hover:border-accent hover:text-accent'
                 }`}
               >
                 <Heart 
@@ -260,19 +248,24 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-200 pt-8">
-              <div className="flex items-center gap-4">
-                <Truck className="text-accent" size={24} strokeWidth={1.5} />
+            {/* SECCIÓN CONFIANZA */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-100 pt-8">
+              <div className="flex items-center gap-4 group">
+                <div className="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-primary transition-all duration-500">
+                  <Truck size={20} strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="text-primary text-xs font-bold tracking-widest uppercase">Envío Rápido</p>
-                  <p className="text-gray-500 text-[10px] mt-1">En CABA y GBA</p>
+                  <p className="text-primary text-[10px] font-black tracking-widest uppercase">Envío Premium</p>
+                  <p className="text-gray-400 text-[9px] uppercase tracking-tighter mt-0.5">CABA, GBA e Interior</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <ShieldCheck className="text-accent" size={24} strokeWidth={1.5} />
+              <div className="flex items-center gap-4 group">
+                <div className="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center text-accent group-hover:bg-accent group-hover:text-primary transition-all duration-500">
+                  <ShieldCheck size={20} strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="text-primary text-xs font-bold tracking-widest uppercase">Originalidad</p>
-                  <p className="text-gray-500 text-[10px] mt-1">100% Garantizada</p>
+                  <p className="text-primary text-[10px] font-black tracking-widest uppercase">Autenticidad</p>
+                  <p className="text-gray-400 text-[9px] uppercase tracking-tighter mt-0.5">Producto Original</p>
                 </div>
               </div>
             </div>

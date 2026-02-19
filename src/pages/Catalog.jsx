@@ -10,10 +10,7 @@ export default function Catalog() {
     const [loading, setLoading] = useState(true)
     const [searchParams, setSearchParams] = useSearchParams()
 
-    // --- ESTADO PARA MOBILE DRAWER ---
     const [isFilterOpen, setIsFilterOpen] = useState(false)
-
-    // --- ESTADOS DE FILTROS ---
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedBrand, setSelectedBrand] = useState('Todas')
     const [selectedGender, setSelectedGender] = useState('Todas')
@@ -58,16 +55,38 @@ export default function Catalog() {
 
     useEffect(() => {
         let result = products
+
+        // 1. Filtro de Búsqueda
         if (searchQuery) {
             result = result.filter(p =>
                 p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 p.brand.toLowerCase().includes(searchQuery.toLowerCase())
             )
         }
+
+        // 2. Filtro de Marca
         if (selectedBrand !== 'Todas') result = result.filter(p => p.brand === selectedBrand)
+
+        // 3. Filtro de Género
         if (selectedGender !== 'Todas') result = result.filter(p => p.gender === selectedGender)
-        if (selectedType !== 'Todas') result = result.filter(p => p.category === selectedType)
+
+        // 4. FIX: Filtro de Tipo / Set de Regalos (ML 0)
+        if (selectedType !== 'Todas') {
+            if (selectedType === 'Set de Regalos') {
+                // Trae productos que tengan alguna variante con 0 ML
+                result = result.filter(p => 
+                    p.product_variants && p.product_variants.some(v => v.size_ml === 0)
+                )
+            } else {
+                // Filtro normal por categoría
+                result = result.filter(p => p.category === selectedType)
+            }
+        }
+
+        // 5. Filtro de Familia
         if (selectedFamily !== 'Todas') result = result.filter(p => p.olfactory_family === selectedFamily)
+
+        // 6. Filtro de Precio
         if (priceRange !== Infinity) {
             result = result.filter(p => {
                 if (!p.product_variants || p.product_variants.length === 0) return false
@@ -75,6 +94,7 @@ export default function Catalog() {
                 return minPrice <= priceRange
             })
         }
+
         setFilteredProducts(result)
     }, [products, searchQuery, selectedBrand, selectedGender, selectedType, selectedFamily, priceRange])
 
@@ -90,23 +110,19 @@ export default function Catalog() {
 
     return (
         <div className="bg-white min-h-screen pt-20 lg:pt-28 pb-32">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-
-                {/* Breadcrumbs Adaptables */}
+            <div className="max-w-[1600px] mx-auto px-4 lg:pl-8 lg:pr-12">
                 <nav className="flex items-center gap-2 text-[9px] lg:text-[10px] tracking-[0.2em] uppercase text-gray-400 mb-6 lg:mb-10">
                     <Link to="/" className="hover:text-accent transition-colors">Inicio</Link>
                     <ChevronRight size={10} />
                     <span className="text-primary font-medium italic">Catálogo</span>
                 </nav>
 
-                {/* Header Titular */}
                 <div className="flex flex-col md:flex-row justify-between items-baseline mb-8 lg:mb-12 border-b border-gray-100 pb-8 gap-4">
                     <div className="space-y-1">
                         <h1 className="font-serif text-4xl lg:text-7xl text-primary leading-tight">La Colección</h1>
                         <p className="text-gray-400 text-xs lg:text-sm font-light italic">Fragancias que narran tu historia.</p>
                     </div>
 
-                    {/* Botón Filtros Mobile */}
                     <button
                         onClick={() => setIsFilterOpen(true)}
                         className="lg:hidden flex items-center gap-3 px-6 py-3 bg-primary text-accent text-[10px] tracking-[0.3em] uppercase font-bold w-full justify-center shadow-xl"
@@ -120,20 +136,17 @@ export default function Catalog() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-
+                <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
                     <aside className={`
-    fixed inset-0 z-[100] bg-white p-8 lg:p-0 
-    lg:block lg:inset-auto lg:z-0 lg:col-span-1 transition-transform duration-500
-    
-    /* ESTILOS DESKTOP: Sticky, Línea Divisora y ocultar barra de scroll */
-    lg:sticky lg:top-32 lg:h-fit lg:translate-x-0 
-    lg:border-r lg:border-gray-200 lg:pr-12 
-    overflow-y-auto no-scrollbar
-    
-    ${isFilterOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-`}>
-                        {/* Header Drawer Mobile (Solo visible en celular) */}
+                        fixed inset-0 z-[100] bg-white p-8 lg:p-0 
+                        lg:block lg:inset-auto lg:z-0 transition-transform duration-500
+                        lg:sticky lg:top-32 
+                        lg:w-56 lg:flex-shrink-0
+                        lg:h-[calc(100vh-160px)] lg:overflow-y-auto
+                        lg:pr-6 lg:border-r lg:border-gray-200
+                        no-scrollbar
+                        ${isFilterOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                    `}>
                         <div className="flex items-center justify-between mb-10 lg:hidden">
                             <h2 className="font-serif text-2xl italic text-primary">Filtros</h2>
                             <button onClick={() => setIsFilterOpen(false)} className="p-2 bg-gray-100 rounded-full">
@@ -141,7 +154,6 @@ export default function Catalog() {
                             </button>
                         </div>
 
-                        {/* Buscador Integrado */}
                         <div className="relative group border-b border-gray-100 pb-4 mb-8">
                             <input
                                 type="text"
@@ -153,13 +165,9 @@ export default function Catalog() {
                             <Search className="absolute left-0 top-2.5 text-gray-400" size={16} />
                         </div>
 
-                        {/* Select de Marca */}
                         <div className="border-b border-gray-100 pb-6 mb-8">
-                            <button
-                                onClick={() => setIsBrandOpen(!isBrandOpen)}
-                                className="flex justify-between items-center w-full group"
-                            >
-                                <div className="flex flex-col text-left">
+                            <button onClick={() => setIsBrandOpen(!isBrandOpen)} className="flex justify-between items-center w-full group text-left">
+                                <div className="flex flex-col">
                                     <h3 className="text-primary text-[9px] tracking-[0.3em] uppercase font-bold">Marca</h3>
                                     <span className="text-accent font-serif italic text-lg">{selectedBrand}</span>
                                 </div>
@@ -171,7 +179,7 @@ export default function Catalog() {
                                         <button
                                             key={brand}
                                             onClick={() => { setSelectedBrand(brand); setIsBrandOpen(false); }}
-                                            className={`text-left px-3 py-2 text-[9px] tracking-tight uppercase border transition-all ${selectedBrand === brand ? 'border-accent text-accent font-bold bg-accent/5' : 'border-gray-50 text-gray-400 hover:border-gray-200'}`}
+                                            className={`text-left px-2 py-2 text-[8px] tracking-tight uppercase border transition-all ${selectedBrand === brand ? 'border-accent text-accent font-bold bg-accent/5' : 'border-gray-50 text-gray-400 hover:border-gray-200'}`}
                                         >
                                             {brand}
                                         </button>
@@ -180,10 +188,8 @@ export default function Catalog() {
                             )}
                         </div>
 
-                        {/* Grupos de Filtros */}
-                        <div className="space-y-8">
+                        <div className="space-y-8 pb-10">
                             <FilterGroup title="Género" options={genders} selected={selectedGender} setSelected={setSelectedGender} layout="chips" />
-
                             <div className="border-b border-gray-100 pb-6">
                                 <h3 className="text-primary text-[9px] tracking-[0.3em] uppercase font-bold mb-4">Presupuesto Máximo</h3>
                                 <div className="relative flex items-center border-b border-gray-100 focus-within:border-accent transition-colors">
@@ -197,36 +203,26 @@ export default function Catalog() {
                                     />
                                 </div>
                             </div>
-
                             <FilterGroup title="Familia" options={families} selected={selectedFamily} setSelected={setSelectedFamily} layout="chips" />
                             <FilterGroup title="Concentración" options={types} selected={selectedType} setSelected={setSelectedType} layout="list" />
                         </div>
 
-                        {/* Botones de Acción */}
-                        <div className="space-y-4 pt-8 lg:pb-20">
-                            <button
-                                onClick={() => setIsFilterOpen(false)}
-                                className="w-full lg:hidden py-4 bg-primary text-accent text-[10px] tracking-[0.4em] uppercase font-black flex items-center justify-center gap-3"
-                            >
+                        <div className="sticky bottom-0 bg-white pt-4 pb-10 space-y-4">
+                            <button onClick={() => setIsFilterOpen(false)} className="w-full lg:hidden py-4 bg-primary text-accent text-[10px] tracking-[0.4em] uppercase font-black flex items-center justify-center gap-3">
                                 <Check size={14} /> Aplicar Filtros
                             </button>
-
                             {(selectedBrand !== 'Todas' || selectedGender !== 'Todas' || selectedType !== 'Todas' || selectedFamily !== 'Todas' || searchQuery !== '' || priceRange !== Infinity) && (
-                                <button
-                                    onClick={clearFilters}
-                                    className="w-full py-4 border border-gray-200 text-[10px] tracking-[0.3em] uppercase font-bold text-gray-400 hover:text-red-400 hover:border-red-100 transition-all"
-                                >
+                                <button onClick={clearFilters} className="w-full py-4 border border-gray-200 text-[10px] tracking-[0.3em] uppercase font-bold text-gray-400 hover:text-red-400 hover:border-red-100 transition-all bg-white">
                                     Limpiar Filtros
                                 </button>
                             )}
                         </div>
                     </aside>
 
-                    {/* --- GRILLA DE PRODUCTOS --- */}
-                    <main className="lg:col-span-3">
+                    <main className="flex-1">
                         {loading ? (
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
-                                {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                                     <div key={i} className="space-y-4 animate-pulse">
                                         <div className="aspect-[3/4] bg-gray-100 rounded-sm"></div>
                                         <div className="h-4 bg-gray-100 w-2/3"></div>
@@ -235,8 +231,7 @@ export default function Catalog() {
                                 ))}
                             </div>
                         ) : filteredProducts.length > 0 ? (
-                            /* En mobile usamos 2 columnas (grid-cols-2) */
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 lg:gap-x-10 gap-y-12 lg:gap-y-20">
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 lg:gap-x-8 gap-y-12 lg:gap-y-16">
                                 {filteredProducts.map(product => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
