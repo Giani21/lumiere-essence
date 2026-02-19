@@ -13,15 +13,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [allOrders, setAllOrders] = useState([])
   const [products, setProducts] = useState([])
-  
-  // Estado para el filtro de tiempo de Ingresos
-  const [revenueRange, setRevenueRange] = useState('all') // 'today', '7d', '30d', 'all'
+  const [revenueRange, setRevenueRange] = useState('all') 
   const [showFilterMenu, setShowFilterMenu] = useState(false)
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        // 1. Traer TODAS las órdenes para poder filtrar localmente
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('id, total_amount, status, created_at')
@@ -30,7 +27,6 @@ export default function Dashboard() {
         if (ordersError) throw ordersError
         setAllOrders(ordersData)
 
-        // 2. Traer Productos
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('id, name, product_variants(stock)')
@@ -47,126 +43,89 @@ export default function Dashboard() {
     fetchDashboardData()
   }, [])
 
-  // --- CÁLCULOS DINÁMICOS (useMemo para eficiencia) ---
-
-  // 1. Calcular Ingresos según el filtro seleccionado
   const revenueMetrics = useMemo(() => {
     const now = new Date()
-    // Solo contamos dinero real (Pagado, Enviado, Entregado)
     const validStatuses = ['paid', 'shipped', 'delivered']
     
     const filteredOrders = allOrders.filter(order => {
       if (!validStatuses.includes(order.status)) return false
-
       const orderDate = new Date(order.created_at)
-      
-      if (revenueRange === 'today') {
-        return orderDate.toDateString() === now.toDateString()
-      }
-      if (revenueRange === '7d') {
-        const diffTime = Math.abs(now - orderDate)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        return diffDays <= 7
-      }
-      if (revenueRange === '30d') {
-        const diffTime = Math.abs(now - orderDate)
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        return diffDays <= 30
-      }
-      return true // 'all'
+      if (revenueRange === 'today') return orderDate.toDateString() === now.toDateString()
+      if (revenueRange === '7d') return (now - orderDate) / (1000 * 3600 * 24) <= 7
+      if (revenueRange === '30d') return (now - orderDate) / (1000 * 3600 * 24) <= 30
+      return true
     })
 
     const total = filteredOrders.reduce((acc, order) => acc + Number(order.total_amount), 0)
     return { total, count: filteredOrders.length }
   }, [allOrders, revenueRange])
 
-  // 2. Métricas Generales (Independientes del filtro de ingresos)
   const generalMetrics = useMemo(() => {
-    // Stock Bajo
     let lowStock = 0
     products.forEach(p => {
-      const totalStock = p.product_variants.reduce((acc, v) => acc + v.stock, 0)
+      const totalStock = p.product_variants?.reduce((acc, v) => acc + v.stock, 0) || 0
       if (totalStock < 5) lowStock++
     })
-
-    // Pendientes
     const pending = allOrders.filter(o => o.status === 'pending').length
-
-    // Datos Gráfico (Últimos 7 días fijo para consistencia visual)
-    const validForChart = allOrders.filter(o => ['paid', 'shipped', 'delivered'].includes(o.status))
-    const salesMap = {}
     
-    // Inicializar últimos 7 días en 0
+    const salesMap = {}
     for(let i=6; i>=0; i--) {
       const d = new Date()
       d.setDate(d.getDate() - i)
       salesMap[d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })] = 0
     }
-
-    validForChart.forEach(order => {
+    allOrders.filter(o => ['paid', 'shipped', 'delivered'].includes(o.status)).forEach(order => {
       const date = new Date(order.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
-      if (salesMap[date] !== undefined) {
-        salesMap[date] += Number(order.total_amount)
-      }
+      if (salesMap[date] !== undefined) salesMap[date] += Number(order.total_amount)
     })
-
-    const salesData = Object.entries(salesMap).map(([date, amount]) => ({ date, amount }))
-
-    return { lowStock, pending, salesData }
+    return { lowStock, pending, salesData: Object.entries(salesMap).map(([date, amount]) => ({ date, amount })) }
   }, [allOrders, products])
 
-
-  if (loading) return <div className="p-10 text-center text-slate-500 font-mono">_CARGANDO_METRICAS...</div>
+  if (loading) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+      <div className="w-10 h-10 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+      <p className="text-slate-500 font-mono text-[10px] tracking-widest uppercase animate-pulse">Sincronizando Boutique...</p>
+    </div>
+  )
 
   return (
-    <div className="space-y-6 font-sans pb-10">
+    <div className="space-y-6 lg:space-y-8 pb-10 px-2 lg:px-0">
       
-      {/* HEADER */}
-      <div className="flex justify-between items-end border-b border-slate-800 pb-6">
+      {/* HEADER DINÁMICO */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 tracking-tight flex items-center gap-2">
-            <Activity className="text-indigo-500" /> DASHBOARD
+            <Activity className="text-indigo-400" size={24} /> DASHBOARD
           </h1>
-          <p className="text-slate-500 text-xs font-mono mt-1">
-            ESTADO DEL NEGOCIO
+          <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase tracking-wider">
+            Consola de Gestión / Lumière Essence
           </p>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800 text-[10px] font-bold">
+          <Clock size={12} /> {new Date().toLocaleDateString('es-AR')}
         </div>
       </div>
 
-      {/* --- KPI CARDS --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* --- KPI CARDS RESPONSIVE --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         
-        {/* Card 1: INGRESOS (CON FILTRO) */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-lg relative overflow-visible group">
-          <div className="flex justify-between items-start mb-2">
-            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Ingresos Reales</p>
-            
-            {/* DROPDOWN MENU */}
+        {/* INGRESOS */}
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-visible group shadow-lg">
+          <div className="flex justify-between items-start mb-4">
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em]">Caja Registrada</p>
             <div className="relative">
               <button 
                 onClick={() => setShowFilterMenu(!showFilterMenu)}
-                className="flex items-center gap-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors border border-slate-700"
+                className="flex items-center gap-2 text-[9px] bg-slate-800/50 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg transition-all border border-slate-700/50"
               >
-                <Filter size={10} />
-                {revenueRange === 'all' ? 'Histórico' : 
-                 revenueRange === 'today' ? 'Hoy' : 
-                 revenueRange === '7d' ? '7 Días' : '30 Días'}
-                <ChevronDown size={10} />
+                <Filter size={10} className="text-indigo-400" />
+                {revenueRange === 'all' ? 'Histórico' : revenueRange === 'today' ? 'Hoy' : revenueRange === '7d' ? '7 Días' : '30 Días'}
               </button>
-
               {showFilterMenu && (
-                <div className="absolute right-0 top-8 w-32 bg-slate-900 border border-slate-700 shadow-xl rounded z-20 flex flex-col py-1">
-                  {[
-                    { label: 'Hoy', val: 'today' },
-                    { label: 'Últimos 7 días', val: '7d' },
-                    { label: 'Últimos 30 días', val: '30d' },
-                    { label: 'Todo el historial', val: 'all' }
-                  ].map((opt) => (
-                    <button
-                      key={opt.val}
-                      onClick={() => { setRevenueRange(opt.val); setShowFilterMenu(false); }}
-                      className={`text-left px-3 py-2 text-[10px] hover:bg-slate-800 ${revenueRange === opt.val ? 'text-indigo-400 font-bold' : 'text-slate-400'}`}
-                    >
+                <div className="absolute right-0 top-10 w-40 bg-slate-950 border border-slate-800 shadow-2xl rounded-xl z-50 flex flex-col py-2 overflow-hidden animate-in fade-in zoom-in duration-200">
+                  {[{ label: 'Hoy', val: 'today' }, { label: '7 Días', val: '7d' }, { label: '30 Días', val: '30d' }, { label: 'Historial', val: 'all' }].map((opt) => (
+                    <button key={opt.val} onClick={() => { setRevenueRange(opt.val); setShowFilterMenu(false); }}
+                      className={`text-left px-4 py-3 text-[10px] hover:bg-indigo-500/10 transition-colors ${revenueRange === opt.val ? 'text-indigo-400 font-bold' : 'text-slate-400'}`}>
                       {opt.label}
                     </button>
                   ))}
@@ -174,104 +133,101 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-
-          <h3 className="text-2xl font-mono text-slate-100 mt-2 font-bold animate-fadeIn">
+          <h3 className="text-3xl font-mono text-slate-100 font-bold tracking-tighter">
             ${revenueMetrics.total.toLocaleString('es-AR')}
           </h3>
-          <p className="text-[10px] text-slate-500 mt-1">
-            Basado en {revenueMetrics.count} órdenes cobradas
-          </p>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-500/50"></div>
+          <p className="text-[9px] text-slate-500 mt-2 font-medium">Volumen: {revenueMetrics.count} Ventas</p>
+          <div className="absolute bottom-0 left-0 w-full h-1.5 bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
         </div>
 
-        {/* Card 2: Pedidos Totales (Histórico) */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-lg relative overflow-hidden">
+        {/* PENDIENTES */}
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Volumen Ventas</p>
-              <h3 className="text-2xl font-mono text-slate-100 mt-1 font-bold">{allOrders.length}</h3>
-            </div>
-            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><ShoppingBag size={20} /></div>
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em]">Logística Pendiente</p>
+            <div className="p-2 bg-amber-500/10 text-amber-500 rounded-lg group-hover:scale-110 transition-transform"><Clock size={18} /></div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500/50"></div>
+          <h3 className="text-3xl font-mono text-amber-100 font-bold tracking-tighter">{generalMetrics.pending}</h3>
+          <p className="text-[9px] text-slate-500 mt-2 font-medium">Ordenes a empaquetar</p>
+          <div className="absolute bottom-0 left-0 w-full h-1.5 bg-amber-500"></div>
         </div>
 
-        {/* Card 3: Pendientes (Acción requerida) */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-lg relative overflow-hidden">
+        {/* STOCK BAJO */}
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">A Despachar</p>
-              <h3 className="text-2xl font-mono text-amber-100 mt-1 font-bold">{generalMetrics.pending}</h3>
-            </div>
-            <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg"><Clock size={20} /></div>
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em]">Reposición Urgente</p>
+            <div className="p-2 bg-rose-500/10 text-rose-500 rounded-lg group-hover:scale-110 transition-transform"><AlertTriangle size={18} /></div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-amber-500/50"></div>
+          <h3 className="text-3xl font-mono text-rose-100 font-bold tracking-tighter">{generalMetrics.lowStock}</h3>
+          <p className="text-[9px] text-slate-500 mt-2 font-medium">Productos sin stock</p>
+          <div className="absolute bottom-0 left-0 w-full h-1.5 bg-rose-500"></div>
         </div>
 
-        {/* Card 4: Stock */}
-        <div className="bg-slate-900 border border-slate-800 p-5 rounded-lg relative overflow-hidden">
+        {/* TOTAL VENTAS */}
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Alerta Stock</p>
-              <h3 className="text-2xl font-mono text-rose-100 mt-1 font-bold">{generalMetrics.lowStock}</h3>
-            </div>
-            <div className="p-2 bg-rose-500/10 text-rose-400 rounded-lg"><AlertTriangle size={20} /></div>
+            <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em]">Total Pedidos</p>
+            <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg group-hover:scale-110 transition-transform"><ShoppingBag size={18} /></div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-rose-500/50"></div>
+          <h3 className="text-3xl font-mono text-slate-100 font-bold tracking-tighter">{allOrders.length}</h3>
+          <p className="text-[9px] text-slate-500 mt-2 font-medium">Histórico acumulado</p>
+          <div className="absolute bottom-0 left-0 w-full h-1.5 bg-blue-500"></div>
         </div>
       </div>
 
-      {/* --- GRÁFICO --- */}
+      {/* --- GRÁFICO Y ACTIVIDAD --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-lg p-6 shadow-xl">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-            <TrendingUp size={14} className="text-emerald-500" /> Tendencia (Últimos 7 días)
+        
+        {/* GRAFICO TENDENCIA */}
+        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 lg:p-8 shadow-2xl">
+          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            Flujo de Caja (7D)
           </h3>
-          <div className="h-64 w-full">
+          <div className="h-64 sm:h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={generalMetrics.salesData}>
                 <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="date" stroke="#64748b" tick={{fontSize: 10, fontFamily: 'monospace'}} axisLine={false} tickLine={false} />
-                <YAxis stroke="#64748b" tick={{fontSize: 10, fontFamily: 'monospace'}} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' }} />
-                <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                <XAxis dataKey="date" stroke="#475569" tick={{fontSize: 9, fontWeight: 700}} axisLine={false} tickLine={false} />
+                <YAxis hide={window.innerWidth < 640} stroke="#475569" tick={{fontSize: 9}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                <Tooltip contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', borderRadius: '12px', fontSize: '10px' }} />
+                <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* ÚLTIMOS PEDIDOS */}
-        <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden flex flex-col">
-          <div className="p-4 bg-slate-950 border-b border-slate-800">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Actividad Reciente</h3>
+        {/* ACTIVIDAD RECIENTE */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+          <div className="p-5 bg-slate-950/50 border-b border-slate-800 flex justify-between items-center">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Últimas Operaciones</h3>
+            <ArrowUpRight size={14} className="text-slate-600" />
           </div>
-          <div className="flex-1 overflow-y-auto max-h-[300px]">
-            <table className="w-full">
-              <tbody className="divide-y divide-slate-800">
-                {allOrders.slice(0, 5).map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-800/50">
-                    <td className="p-4">
-                      <div className="flex flex-col">
-                        <span className="text-slate-200 font-bold text-xs font-mono">#{order.id}</span>
-                        <span className="text-[10px] text-slate-500">{new Date(order.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="text-slate-300 font-mono text-xs font-bold">${Number(order.total_amount).toLocaleString()}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="flex-1 overflow-y-auto max-h-[350px] lg:max-h-none custom-scrollbar">
+            {allOrders.slice(0, 8).map((order) => (
+              <div key={order.id} className="p-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-slate-200 font-bold text-xs font-mono tracking-tighter">#{order.id.split('-')[0]}</span>
+                  <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">{new Date(order.created_at).toLocaleDateString()}</span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-emerald-400 font-mono text-xs font-bold">${Number(order.total_amount).toLocaleString()}</span>
+                  <div className={`text-[8px] font-black px-2 py-0.5 rounded uppercase mt-1 ${
+                    order.status === 'paid' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-500'
+                  }`}>
+                    {order.status}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <Link to="/admin/orders" className="p-3 text-center text-[10px] uppercase font-bold text-indigo-400 hover:bg-slate-800 transition-colors block border-t border-slate-800">
-            Ver Todo
+          <Link to="/admin/orders" className="p-4 text-center text-[10px] uppercase font-black text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all block border-t border-slate-800">
+            Administrar Ventas
           </Link>
         </div>
       </div>
