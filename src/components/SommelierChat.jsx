@@ -97,6 +97,13 @@ export default function SommelierChat() {
     }
   }
 
+  const handleClearChat = () => {
+    setMessages([
+      { role: 'bot', content: 'Bienvenido a **Lumière Essence**. Soy su Sommelier personal. ¿Puedo ayudarle a descubrir su próxima fragancia?', recommendations: [] }
+    ]);
+    setShowClearConfirm(false);
+  }
+
   const isBlocked = rateInfo.used >= rateInfo.limit;
 
   return (
@@ -111,15 +118,42 @@ export default function SommelierChat() {
       </button>
 
       {/* Contenedor del Chat */}
-      {/* CAMBIO CLAVE: En móvil usamos inset-0 para que ocupe todo, en desktop mantenemos el tamaño fijo */}
       <div className={`
-        fixed z-[70] transition-all duration-500 flex flex-col bg-white
+        fixed z-[70] transition-all duration-500 flex flex-col bg-white overflow-hidden
         ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none lg:translate-y-12'}
         inset-0 lg:inset-auto lg:bottom-6 lg:right-6 lg:w-[420px] lg:h-[650px] lg:max-h-[85vh] lg:rounded-sm lg:border lg:border-gray-100 lg:shadow-2xl
       `}>
 
+        {/* Overlay de Confirmación para borrar chat */}
+        {showClearConfirm && (
+          <div className="absolute inset-0 bg-black/40 z-[80] flex items-center justify-center backdrop-blur-sm transition-all rounded-sm">
+            <div className="bg-white p-6 shadow-2xl max-w-[280px] w-full mx-4 border border-gray-100 text-center animate-in fade-in zoom-in duration-200">
+              <div className="w-12 h-12 bg-[#FAF9F7] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={24} className="text-primary" />
+              </div>
+              <h4 className="font-serif text-primary text-lg mb-2">¿Reiniciar chat?</h4>
+              <p className="text-xs text-gray-500 mb-6">Se borrará el historial de esta conversación. Las fragancias recomendadas desaparecerán.</p>
+              
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setShowClearConfirm(false)} 
+                  className="flex-1 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleClearChat} 
+                  className="flex-1 py-3 text-[10px] font-bold bg-primary text-accent uppercase tracking-widest hover:bg-primary/90 transition-colors"
+                >
+                  Reiniciar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header - Más alto en móvil para dejar espacio al notch/status bar */}
-        <div className="bg-primary px-6 pt-12 pb-5 lg:pt-5 lg:py-5 flex justify-between items-center shrink-0">
+        <div className="bg-primary px-6 pt-12 pb-5 lg:pt-5 lg:py-5 flex justify-between items-center shrink-0 relative z-10">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-accent/30 shrink-0">
               <img src="/images/Logo.png" alt="Lumière" className="w-full h-full object-cover" />
@@ -177,7 +211,7 @@ export default function SommelierChat() {
                     <div
                       key={perfume.id}
                       className="min-w-[170px] max-w-[190px] flex-shrink-0 snap-start"
-                      onClick={() => setIsOpen(false)} // <--- ESTO CIERRA EL CHAT AL TOCAR EL PRODUCTO
+                      onClick={() => setIsOpen(false)}
                     >
                       <ProductCard product={perfume} />
                     </div>
@@ -195,7 +229,7 @@ export default function SommelierChat() {
         </div>
 
         {/* Input con área segura para teclados móviles */}
-        <div className="p-4 lg:p-6 bg-white border-t border-gray-50 pb-8 lg:pb-6">
+        <div className="p-4 lg:p-6 bg-white border-t border-gray-50 pb-8 lg:pb-6 relative z-10">
           <form onSubmit={handleSend} className="space-y-3">
             <div className="relative flex items-center">
               <input
