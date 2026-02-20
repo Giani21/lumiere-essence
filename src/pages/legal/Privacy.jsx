@@ -95,7 +95,7 @@ export default function Privacy() {
             </li>
             <li className="flex items-center gap-3 text-sm text-gray-600">
               <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-              Brindar soporte personalizado a través de nuestro <strong>Sommelier Virtual</strong>.
+              Brindar soporte personalizado a través de nuestro <strong>Especialista Virtual</strong>.
             </li>
             <li className="flex items-center gap-3 text-sm text-gray-600">
               <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>

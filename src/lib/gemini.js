@@ -17,7 +17,7 @@ export const askIA = async (userQuestion, perfumes, chatHistory = []) => {
     };
 
   } catch (error) {
-    console.error("Error Sommelier:", error.message);
+    console.error("Error Especialista:", error.message);
     return { text: "Disculpame, tuve un inconveniente técnico.", recommendedIds: [] };
   }
 };

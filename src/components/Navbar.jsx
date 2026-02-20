@@ -130,7 +130,7 @@ export default function Navbar() {
               <div className="flex items-center gap-3 md:gap-6">
                 <button onClick={openAIChat} className="hidden md:flex text-stone-950 hover:text-accent flex-col items-center group transition-colors">
                   <Sparkles size={20} strokeWidth={2} className="group-hover:animate-pulse" />
-                  <span className="text-[7px] uppercase tracking-widest mt-1 hidden lg:block">Sommelier</span>
+                  <span className="text-[7px] uppercase tracking-widest mt-1 hidden lg:block">Especialista</span>
                 </button>
 
                 <Link to="/cart" className="group relative text-stone-950 hover:text-accent flex flex-col items-center transition-colors">
@@ -273,7 +273,7 @@ export default function Navbar() {
               </Link>
 
               <button onClick={openAIChat} className="group flex items-center gap-4 text-accent font-black text-sm uppercase tracking-widest py-6 hover:text-stone-950 transition-colors">
-                <Sparkles size={18} strokeWidth={2} /> Sommelier IA
+                <Sparkles size={18} strokeWidth={2} /> Especialista Virtual
               </button>
             </div>
           </div>

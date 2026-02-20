@@ -22,7 +22,7 @@ export default function SommelierChat() {
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('lumiere_chat_history')
     return saved ? JSON.parse(saved) : [
-      { role: 'bot', content: 'Bienvenido a **Lumière Essence**. Soy su Sommelier personal. ¿Puedo ayudarle a descubrir su próxima fragancia?', recommendations: [] }
+      { role: 'bot', content: 'Bienvenido a **Lumière Essence**. Soy su Especialista personal. ¿Puedo ayudarle a descubrir su próxima fragancia?', recommendations: [] }
     ]
   })
 
@@ -118,7 +118,7 @@ export default function SommelierChat() {
 
   const handleClearChat = () => {
     setMessages([
-      { role: 'bot', content: 'Bienvenido a **Lumière Essence**. Soy su Sommelier personal. ¿Puedo ayudarle a descubrir su próxima fragancia?', recommendations: [] }
+      { role: 'bot', content: 'Bienvenido a **Lumière Essence**. Soy su Especialista personal. ¿Puedo ayudarle a descubrir su próxima fragancia?', recommendations: [] }
     ]);
     setShowClearConfirm(false);
   }
@@ -152,7 +152,7 @@ export default function SommelierChat() {
               </div>
               <h3 className="font-serif text-2xl text-primary mb-2 italic">Exclusivo</h3>
               <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-                El servicio de Sommelier IA es exclusivo para clientes de Lumière Essence. Inicie sesión para recibir asesoramiento personalizado.
+                Este servicio de Especialista Virtual es para clientes de Lumière Essence. Inicie sesión para recibir asesoramiento personalizado.
               </p>
               <a 
                 href="/login" // <-- Cambia esto por la ruta real de tu login
@@ -212,7 +212,7 @@ export default function SommelierChat() {
               <img src="/images/Logo.png" alt="Lumière" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 className="font-serif text-white text-lg italic tracking-tight leading-none">Sommelier</h3>
+              <h3 className="font-serif text-white text-lg italic tracking-tight leading-none">Especialista</h3>
               <p className="text-[8px] text-accent uppercase tracking-[0.3em] mt-1 font-bold">Lumière AI</p>
             </div>
           </div>
@@ -288,7 +288,7 @@ export default function SommelierChat() {
               <input
                 type="text" value={input} maxLength={255}
                 onChange={(e) => { setInput(e.target.value); setCharCount(e.target.value.length); }}
-                placeholder={isBlocked || !isAuthenticated ? "Inicie sesión para consultar..." : "Consultar al sommelier..."}
+                placeholder={isBlocked || !isAuthenticated ? "Inicie sesión para consultar..." : "Consultar al Especialista..."}
                 disabled={isBlocked || !isAuthenticated}
                 className="w-full bg-[#FAF9F7] border border-gray-100 py-4 lg:py-3.5 pl-5 pr-12 text-sm lg:text-xs focus:outline-none focus:border-accent focus:bg-white transition-all rounded-full lg:rounded-sm disabled:opacity-60 disabled:bg-gray-100"
               />

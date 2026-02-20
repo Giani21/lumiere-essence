@@ -145,7 +145,7 @@ export default function Home() {
                   </h3>
                   
                   <p className="text-stone-900 font-bold text-sm lg:text-base leading-relaxed max-w-md mx-auto lg:mx-0">
-                    Nuestro Sommelier Virtual utiliza tecnología de autor para recomendarte la fragancia que define tu carácter.
+                    Nuestro Especialista Virtual utiliza tecnología de autor para recomendarte la fragancia que define tu carácter.
                   </p>
                   
                   <button 

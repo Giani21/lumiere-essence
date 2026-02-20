@@ -110,7 +110,7 @@ export default function Footer() {
               onClick={() => window.dispatchEvent(new Event('open-ai-chat'))}
               className="text-stone-900 hover:text-accent text-xs tracking-widest uppercase transition-all w-fit text-left font-black"
             >
-              Sommelier Virtual
+              Especialista Virtual
             </button>
           </div>
 
