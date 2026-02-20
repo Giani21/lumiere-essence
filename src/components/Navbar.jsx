@@ -47,7 +47,7 @@ export default function Navbar() {
 
   const handleCategoryClick = (category) => {
     const genderMap = {
-      'Mujere': 'Femeninos',
+      'Mujer': 'Femeninos',
       'Hombre': 'Masculinos',
       'Unisex': 'Unisex'
     };
@@ -202,7 +202,7 @@ export default function Navbar() {
             <div className="mb-8">
               <p className="text-[9px] uppercase tracking-[0.2em] text-stone-950 mb-4 font-black">Categorías Rápidas</p>
               <div className="flex flex-wrap gap-3">
-                {['Mujeres', 'Hombres', 'Unisex'].map((cat) => (
+                {['Mujer', 'Hombre', 'Unisex'].map((cat) => (
                   <button 
                     key={cat}
                     onClick={() => handleCategoryClick(cat)} 
