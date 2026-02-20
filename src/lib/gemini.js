@@ -1,18 +1,19 @@
-import { supabase } from '../lib/supabase'
+import { supabase } from './supabase'
 
 export const askIA = async (userQuestion, perfumes, chatHistory = []) => {
   try {
-    // 1. Obtenemos la sesión actual para refrescar el token si es necesario
-    const { data: { session } } = await supabase.auth.getSession();
+    // Obtenemos la sesión actual de forma asíncrona
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (!session) {
-      throw new Error("No hay una sesión activa. Por favor, inicie sesión.");
+    if (sessionError || !session) {
+      throw new Error("Sesión no válida o expirada.");
     }
 
-    // 2. Invocamos la función pasando explícitamente el token en los headers
+    // Invocamos la función pasando el token explícitamente
     const { data, error } = await supabase.functions.invoke('sommelier-ia', {
       body: { userQuestion, perfumes, chatHistory },
       headers: {
+        // Esto asegura que la Edge Function reciba el JWT del usuario logueado
         Authorization: `Bearer ${session.access_token}`
       }
     });
@@ -20,14 +21,15 @@ export const askIA = async (userQuestion, perfumes, chatHistory = []) => {
     if (error) throw error;
 
     return {
-      text: data.text,
-      recommendedIds: data.recommendedIds
+      text: data?.text || "No obtuve respuesta.",
+      recommendedIds: data?.recommendedIds || []
     };
 
   } catch (error) {
-    console.error("Error Especialista:", error.message);
+    // Si es un 401, el error suele venir en error.context o similar
+    console.error("Error detallado:", error);
     return { 
-      text: "Para usar este servicio debe estar correctamente autenticado.", 
+      text: "Su sesión ha caducado o no tiene permisos. Por favor, reingrese.", 
       recommendedIds: [] 
     };
   }
