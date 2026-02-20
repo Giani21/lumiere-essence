@@ -15,7 +15,6 @@ export default function Navbar() {
   const { totalItems } = useCart()
   const { user, signOut } = useAuth()
 
-  // Escuchar si el Sommelier Chat está abierto para ocultar el Nav
   useEffect(() => {
     const handleChatStatus = (e) => {
       setIsChatOpen(e.detail.isOpen);
@@ -25,13 +24,11 @@ export default function Navbar() {
     return () => window.removeEventListener('chat-status-change', handleChatStatus);
   }, []);
 
-  // Bloquear scroll al abrir menú
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden'
     else document.body.style.overflow = 'unset'
   }, [isOpen])
 
-  // Enlaces inactivos en un gris piedra elegante, activos en color acento
   const isActive = (path) => location.pathname === path
     ? "text-accent font-bold"
     : "text-stone-600 hover:text-accent transition-colors duration-300"
@@ -45,7 +42,6 @@ export default function Navbar() {
   }
 
   const handleCategoryClick = (category) => {
-    // Mapeamos el nombre del botón al valor exacto que espera tu base de datos/filtros
     const genderMap = {
       'Mujeres': 'Femeninos',
       'Hombres': 'Masculinos',
@@ -76,7 +72,6 @@ export default function Navbar() {
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-20 md:h-24"> 
             
-            {/* LOGO */}
             <div className="flex items-center gap-4 w-1/4">
               <Link to="/">
                 <img 
@@ -90,7 +85,6 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* BUSCADOR (Desktop) */}
             <div className="hidden md:flex flex-1 justify-center px-4">
               <form onSubmit={handleSearch} className="relative w-full max-w-md group">
                 <input
@@ -104,9 +98,7 @@ export default function Navbar() {
               </form>
             </div>
 
-            {/* ICONOS Y LINKS */}
             <div className="flex items-center justify-end gap-4 md:gap-7 text-stone-800">
-              
               <div className="flex items-center gap-4 md:gap-8">
                 <Link to="/" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/')}`}>Inicio</Link>
                 <Link to="/catalog" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/catalog')}`}>Catálogo</Link>
@@ -130,17 +122,13 @@ export default function Navbar() {
                   <span className="text-[7px] uppercase tracking-widest mt-1 hidden lg:block opacity-70">Mi Bolsa</span>
                 </Link>
 
-                {/* Wishlist & Perfil (Desktop) con Dropdown de Usuario */}
                 <div className="hidden lg:flex items-center gap-6">
                   <Link to="/wishlist" className="text-stone-600 hover:text-accent transition-colors"><Heart size={20} strokeWidth={1.5} /></Link>
-                  
                   {user ? (
                     <div className="relative group/user">
                       <button className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold uppercase transition-transform group-hover/user:scale-105 shadow-sm">
                         {user.email?.charAt(0)}
                       </button>
-                      
-                      {/* Menu Desplegable Desktop - Claro y elegante */}
                       <div className="absolute right-0 mt-2 w-48 bg-white shadow-xl rounded-sm py-2 opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-300 translate-y-2 group-hover/user:translate-y-0 z-[90] border border-stone-100">
                         <div className="px-4 py-2 border-b border-stone-100 mb-1">
                           <p className="text-[10px] text-stone-800 font-bold truncate">{user.email}</p>
@@ -164,7 +152,6 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* BOTÓN HAMBURGUESA MÓVIL */}
                 <button onClick={() => setIsOpen(true)} className="lg:hidden text-stone-800 p-1 hover:text-accent transition-colors">
                   <Menu size={24} strokeWidth={1.5} />
                 </button>
@@ -174,35 +161,29 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* MENU MOBILE FULL SCREEN - LUMINOSO */}
+      {/* MENU MOBILE FULL SCREEN */}
       <div className={`fixed inset-0 z-[120] bg-[#F6F4F0] transition-transform duration-500 ease-in-out lg:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full relative">
 
-          {/* Sutil gradiente para profundidad */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#EFEBE4]/50 to-transparent pointer-events-none"></div>
-
           <div className="flex items-center justify-between h-20 px-6 border-b border-stone-200 shrink-0 relative z-10">
-            <span className="font-serif text-lg text-stone-800 tracking-widest uppercase italic drop-shadow-sm">Menú</span>
-            <button onClick={() => setIsOpen(false)} className="text-accent p-2 hover:scale-110 transition-all">
+            <span className="font-serif text-lg text-stone-800 tracking-widest uppercase italic">Menú</span>
+            <button onClick={() => setIsOpen(false)} className="text-stone-800 p-2 hover:text-accent hover:scale-110 transition-all">
               <X size={28} strokeWidth={1.5} />
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-8 py-6 relative z-10">
-            
-            {/* Buscador Mobile */}
             <form onSubmit={handleSearch} className="relative w-full mb-8 group">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar fragancias..."
-                className="w-full bg-white border border-stone-200 rounded-sm py-3.5 pl-12 pr-4 text-stone-800 text-sm focus:outline-none focus:border-accent transition-all placeholder:text-stone-400 shadow-sm"
+                className="w-full bg-white border border-stone-200 rounded-sm py-3.5 pl-12 pr-4 text-stone-800 text-sm focus:outline-none focus:border-accent focus:shadow-sm transition-all placeholder:text-stone-400"
               />
               <Search className="absolute left-4 top-4 text-stone-400 group-focus-within:text-accent transition-colors" size={18} />
             </form>
 
-            {/* Filtros Rápidos / Chips */}
             <div className="mb-10">
               <p className="text-[9px] uppercase tracking-[0.2em] text-stone-500 mb-4 font-bold">Categorías Rápidas</p>
               <div className="flex flex-wrap gap-3">
@@ -227,24 +208,24 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* Links Principales */}
-            <Link to="/" onClick={() => setIsOpen(false)} className="block text-3xl font-serif text-stone-800 italic border-b border-stone-200 pb-6 hover:text-accent transition-colors">Inicio</Link>
-            <Link to="/catalog" onClick={() => setIsOpen(false)} className="block text-3xl font-serif text-stone-800 italic border-b border-stone-200 py-6 hover:text-accent transition-colors">Catálogo Completo</Link>
-            
+            {/* SECCIÓN UNIFICADA: Ahora Inicio y Catálogo tienen el mismo estilo que el resto */}
             <div className="flex flex-col mt-2">
+              <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-4 text-stone-600 text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-stone-900 transition-colors">
+                Inicio
+              </Link>
+              <Link to="/catalog" onClick={() => setIsOpen(false)} className="flex items-center gap-4 text-stone-600 text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-stone-900 transition-colors">
+                Catálogo Completo
+              </Link>
               <Link to="/cart" onClick={() => setIsOpen(false)} className="group flex items-center justify-between text-stone-600 text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-stone-800 transition-colors">
                 <div className="flex items-center gap-4"><ShoppingBag size={18} className="text-stone-400 group-hover:text-accent transition-colors"/> Mi Bolsa</div>
                 {totalItems > 0 && <span className="text-white bg-accent px-2 py-0.5 rounded-full font-bold text-[10px] shadow-sm">{totalItems}</span>}
               </Link>
-              
               <Link to="/orders" onClick={() => setIsOpen(false)} className="group flex items-center gap-4 text-stone-600 text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-stone-800 transition-colors">
                 <Package size={18} className="text-stone-400 group-hover:text-accent transition-colors"/> Mis Pedidos
               </Link>
-              
               <Link to="/wishlist" onClick={() => setIsOpen(false)} className="group flex items-center gap-4 text-stone-600 text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-stone-800 transition-colors">
                 <Heart size={18} className="text-stone-400 group-hover:text-accent transition-colors"/> Favoritos
               </Link>
-
               <button onClick={openAIChat} className="group flex items-center gap-4 text-accent text-sm uppercase tracking-widest font-bold py-6 hover:text-stone-800 transition-colors">
                 <Sparkles size={18} className="group-hover:text-accent transition-colors"/> Sommelier IA
               </button>
