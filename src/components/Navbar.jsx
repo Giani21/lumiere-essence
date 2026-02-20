@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isBrandsOpen, setIsBrandsOpen] = useState(false) // Estado para el acordeón de marcas
+  const [isBrandsOpen, setIsBrandsOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const location = useLocation()
@@ -16,7 +16,6 @@ export default function Navbar() {
   const { totalItems } = useCart()
   const { user, signOut } = useAuth()
 
-  // Listado de marcas (mismas que usas en el catálogo)
   const brands = [
     'Benito Fernández',
     'INDIA STYLE',
@@ -92,22 +91,19 @@ export default function Navbar() {
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-20 md:h-24">
 
-            {/* LOGO */}
-            <div className="flex items-center gap-4 w-1/4">
+            {/* LOGO - Actualizado a LogoLumiere.png sin círculo */}
+            <div className="flex items-center w-auto max-w-[200px] md:max-w-[280px]">
               <Link to="/">
                 <img
-                  className="h-12 w-12 md:h-16 md:w-16 rounded-full border border-stone-200 object-cover p-0.5 bg-white transition-transform hover:scale-105 shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
-                  src="/images/Logo.png"
+                  className="h-16 sm:h-20 md:h-24 w-auto object-contain transition-transform hover:scale-105"
+                  src="/images/LogoLumiere.png"
                   alt="Lumière Essence"
                 />
-              </Link>
-              <Link to="/" className="font-serif text-base md:text-lg text-stone-950 font-bold tracking-[0.2em] hover:text-accent hidden xl:block uppercase drop-shadow-sm">
-                Lumière Essence
               </Link>
             </div>
 
             {/* BUSCADOR DESKTOP */}
-            <div className="hidden md:flex flex-1 justify-center px-4">
+            <div className="hidden md:flex flex-1 justify-center px-8">
               <form onSubmit={handleSearch} className="relative w-full max-w-md group">
                 <input
                   type="text"
@@ -122,7 +118,7 @@ export default function Navbar() {
 
             {/* ICONOS DESKTOP */}
             <div className="flex items-center justify-end gap-4 md:gap-7 text-stone-950 font-bold">
-              <div className="flex items-center gap-4 md:gap-8">
+              <div className="hidden xl:flex items-center gap-4 md:gap-8">
                 <Link to="/" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/')}`}>Inicio</Link>
                 <Link to="/catalog" className={`text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-b border-transparent hover:border-accent pb-1 ${isActive('/catalog')}`}>Catálogo</Link>
               </div>
@@ -251,7 +247,6 @@ export default function Navbar() {
                         onClick={() => handleBrandClick(brand)}
                         className="text-left py-2 px-3 text-[10px] text-stone-950 uppercase tracking-widest font-black border border-stone-300 bg-white shadow-sm rounded-sm active:bg-accent transition-colors"
                       >
-                        {/* Usamos .toLowerCase() solo para lo visual si quieres que todo se vea igual */}
                         {brand}
                       </button>
                     ))}
