@@ -47,8 +47,8 @@ export default function Navbar() {
 
   const handleCategoryClick = (category) => {
     const genderMap = {
-      'Mujeres': 'Femeninos',
-      'Hombres': 'Masculinos',
+      'Mujere': 'Femeninos',
+      'Hombre': 'Masculinos',
       'Unisex': 'Unisex'
     };
     navigate(`/catalog?gender=${genderMap[category] || category}`);
