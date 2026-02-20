@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Hero from '../components/Hero'
 import ProductCard from '../components/ProductCard'
+import BrandShowcase from '../components/BrandShowcase'
 import { Sparkles, MessageCircle, ArrowRight } from 'lucide-react'
 
 export default function Home() {
@@ -18,7 +19,7 @@ export default function Home() {
           .from('products')
           .select(`*, product_variants ( price, size_ml, stock )`)
           .order('created_at', { ascending: false })
-          .limit(4) 
+          .limit(4)
         if (error) throw error
         setProducts(data)
       } catch (error) {
@@ -32,144 +33,216 @@ export default function Home() {
 
   return (
     <div className="bg-[#F6F4F0] min-h-screen font-sans">
+
+      <style>{`
+        /* ── BRAND TICKER ── */
+        @keyframes ticker {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .ticker-track { animation: ticker 30s linear infinite; }
+        .ticker-track:hover { animation-play-state: paused; }
+
+        /* ── CAT CARDS ── */
+        .cat-card { position: relative; overflow: hidden; display: flex; flex-direction: column; text-decoration: none; }
+        .cat-card img { transition: transform 0.9s cubic-bezier(.22,1,.36,1); }
+        .cat-card:hover img { transform: scale(1.06); }
+        .cat-overlay { position: absolute; inset: 0; }
+        .cat-label { position: relative; z-index: 10; }
+        .cat-bar { width: 28px; height: 1px; transition: width 0.6s cubic-bezier(.22,1,.36,1); }
+        .cat-card:hover .cat-bar { width: 56px; }
+
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position:  200% center; }
+        }
+        .unisex-shimmer {
+          background: linear-gradient(90deg, #b8a99a 0%, #e8ddd5 40%, #b8a99a 60%, #7a6a5e 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 4s linear infinite;
+        }
+
+        /* ── SOMMELIER ── */
+        @keyframes rotateSlow {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        .som-ring-spin { animation: rotateSlow 18s linear infinite; }
+
+        /* ── BANNER EDITORIAL ── */
+        .editorial-line {
+          position: absolute;
+          background: rgba(255,255,255,0.12);
+        }
+      `}</style>
+
       <Hero />
 
-      {/* 2. CINTA DE MARCAS - Texto negro y nítido */}
-      <section className="border-y border-stone-300 bg-white py-6 lg:py-10 overflow-hidden relative">
-        <div className="flex w-max animate-scroll items-center">
-          {[...brands, ...brands].map((brand, i) => (
-            <div key={i} className="flex items-center px-10 lg:px-16 opacity-80 hover:opacity-100 transition-opacity">
-              <span className="font-serif text-sm lg:text-xl text-stone-950 tracking-[0.2em] uppercase cursor-default italic whitespace-nowrap font-bold">{brand}</span>
-              <span className="text-accent text-[10px] ml-16 lg:ml-24">✦</span>
+      {/* ── 2. BRAND TICKER ── */}
+      <section className="border-y border-stone-300 bg-white py-5 lg:py-8 overflow-hidden relative">
+        <div className="flex w-max ticker-track items-center select-none">
+          {[...brands, ...brands, ...brands].map((brand, i) => (
+            <div key={i} className="flex items-center shrink-0">
+              <span className="font-serif text-sm lg:text-lg text-stone-950 tracking-[0.2em] uppercase italic font-semibold whitespace-nowrap px-8 lg:px-14 opacity-70 hover:opacity-100 transition-opacity cursor-default">
+                {brand}
+              </span>
+              <span className="text-stone-300 text-[8px] shrink-0">✦</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 3. CATEGORÍAS DE GÉNERO - Limpias y de alto contraste */}
-      <section className="py-12 lg:py-28 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-0 border-stone-200 lg:border lg:shadow-xl bg-white lg:bg-transparent">
-          
-          {/* Femeninas */}
-          <Link to="/catalog?gender=Femeninos" className="group relative bg-white h-[220px] lg:h-[450px] flex flex-col items-center justify-center transition-all duration-500 hover:bg-[#FAF9F7] border border-stone-100 lg:border-none">
-            <div className="absolute top-6 left-6 lg:top-10 lg:left-10 text-[10px] tracking-[0.4em] uppercase text-stone-950 font-black">01</div>
-            <div className="text-center space-y-4">
-              <h2 className="font-serif text-3xl lg:text-5xl text-stone-950 italic tracking-tight group-hover:scale-105 transition-transform duration-700">Fragancias<br/>Femeninas</h2>
-              <div className="flex justify-center">
-                <div className="w-10 h-[2px] bg-stone-950 group-hover:w-20 group-hover:bg-accent transition-all duration-700"></div>
-              </div>
+      {/* ── 3. CATEGORÍAS ── */}
+      <section className="py-10 lg:py-20 px-4 max-w-7xl mx-auto">
+
+        {/* MOBILE */}
+        <div className="flex flex-col gap-3 md:hidden">
+          <Link to="/catalog?gender=Femeninos" className="cat-card rounded-sm h-[260px]">
+            <img src="/images/Femenina1.png" alt="Fragancias Femeninas" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <div className="cat-overlay bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+            <div className="cat-label absolute bottom-0 left-0 right-0 p-6">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1">01</p>
+              <h2 className="font-serif text-2xl text-white italic leading-tight mb-3">Fragancias<br />Femeninas</h2>
+              <div className="cat-bar bg-white/60"></div>
             </div>
           </Link>
 
-          {/* Unisex - El ancla visual */}
-          <Link to="/catalog?gender=Todas" className="group relative bg-stone-950 h-[220px] lg:h-[450px] flex flex-col items-center justify-center transition-all duration-500 overflow-hidden hover:bg-black">
-            <div className="absolute top-6 left-6 lg:top-10 lg:left-10 text-[10px] tracking-[0.4em] uppercase text-accent font-black">02</div>
-            <div className="text-center space-y-4 relative z-10">
-              <h2 className="font-serif text-3xl lg:text-5xl text-accent italic tracking-tight group-hover:scale-105 transition-transform duration-700">Fragancias<br/>Unisex</h2>
-              <div className="flex justify-center">
-                <div className="w-14 h-[2px] bg-accent/40 group-hover:w-24 group-hover:bg-accent transition-all duration-700"></div>
-              </div>
+          <Link to="/catalog?gender=Todas" className="cat-card rounded-sm h-[150px] bg-stone-950 justify-center items-center">
+            <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 30% 50%, #4a3728 0%, transparent 60%), radial-gradient(circle at 80% 30%, #2a1f18 0%, transparent 50%)" }} />
+            <div className="absolute w-40 h-40 border border-stone-700/25 rounded-full" />
+            <div className="absolute w-28 h-28 border border-stone-600/20 rounded-full" />
+            <div className="cat-label text-center px-6">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-2">02</p>
+              <h2 className="font-serif text-2xl italic leading-tight mb-3 unisex-shimmer">Fragancias<br />Unisex</h2>
+              <div className="cat-bar bg-stone-500/50 mx-auto"></div>
             </div>
           </Link>
 
-          {/* Masculinas */}
-          <Link to="/catalog?gender=Masculinos" className="group relative bg-white h-[220px] lg:h-[450px] flex flex-col items-center justify-center transition-all duration-500 hover:bg-[#FAF9F7] border border-stone-100 lg:border-none">
-            <div className="absolute top-6 left-6 lg:top-10 lg:left-10 text-[10px] tracking-[0.4em] uppercase text-stone-950 font-black">03</div>
-            <div className="text-center space-y-4">
-              <h2 className="font-serif text-3xl lg:text-5xl text-stone-950 italic tracking-tight group-hover:scale-105 transition-transform duration-700">Fragancias<br/>Masculinas</h2>
-              <div className="flex justify-center">
-                <div className="w-10 h-[2px] bg-stone-950 group-hover:w-20 group-hover:bg-accent transition-all duration-700"></div>
-              </div>
+          <Link to="/catalog?gender=Masculinos" className="cat-card rounded-sm h-[260px]">
+            <img src="/images/Masculino1.png" alt="Fragancias Masculinas" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <div className="cat-overlay bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+            <div className="cat-label absolute bottom-0 left-0 right-0 p-6">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1">03</p>
+              <h2 className="font-serif text-2xl text-white italic leading-tight mb-3">Fragancias<br />Masculinas</h2>
+              <div className="cat-bar bg-white/60"></div>
+            </div>
+          </Link>
+        </div>
+
+        {/* DESKTOP */}
+        <div className="hidden md:grid grid-cols-3 shadow-2xl">
+          <Link to="/catalog?gender=Femeninos" className="cat-card h-[520px] lg:h-[620px]">
+            <img src="/images/Femenina1.png" alt="Fragancias Femeninas" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <div className="cat-overlay bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+            <div className="cat-label absolute bottom-0 left-0 right-0 p-8 lg:p-10">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2">01</p>
+              <h2 className="font-serif text-3xl lg:text-4xl text-white italic leading-tight mb-4">Fragancias<br />Femeninas</h2>
+              <div className="cat-bar bg-white/60"></div>
             </div>
           </Link>
 
+          <Link to="/catalog?gender=Todas" className="cat-card h-[520px] lg:h-[620px] bg-stone-950 justify-center items-center">
+            <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 25% 60%, #4a3728 0%, transparent 55%), radial-gradient(circle at 80% 25%, #2a1f18 0%, transparent 50%), radial-gradient(circle at 60% 80%, #1a1410 0%, transparent 40%)" }} />
+            <div className="absolute w-80 h-80 border border-stone-700/25 rounded-full" />
+            <div className="absolute w-60 h-60 border border-stone-600/20 rounded-full" />
+            <div className="absolute w-40 h-40 border border-stone-500/15 rounded-full" />
+            <div className="cat-label text-center px-8">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-3">02</p>
+              <h2 className="font-serif text-3xl lg:text-4xl italic leading-tight mb-4 unisex-shimmer">Fragancias<br />Unisex</h2>
+              <div className="cat-bar bg-stone-500/50 mx-auto"></div>
+            </div>
+          </Link>
+
+          <Link to="/catalog?gender=Masculinos" className="cat-card h-[520px] lg:h-[620px]">
+            <img src="/images/Masculino1.png" alt="Fragancias Masculinas" className="absolute inset-0 w-full h-full object-cover object-top" />
+            <div className="cat-overlay bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+            <div className="cat-label absolute bottom-0 left-0 right-0 p-8 lg:p-10">
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2">03</p>
+              <h2 className="font-serif text-3xl lg:text-4xl text-white italic leading-tight mb-4">Fragancias<br />Masculinas</h2>
+              <div className="cat-bar bg-white/60"></div>
+            </div>
+          </Link>
         </div>
       </section>
 
-      {/* 4. SECCIÓN SELECCIÓN CURADA - Tipografía negra y gruesa */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-24">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-baseline mb-16 lg:mb-24 gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="h-[2px] w-12 bg-stone-950"></div>
-              <span className="text-stone-950 text-[10px] lg:text-[11px] tracking-[0.4em] uppercase font-black">Lanzamientos</span>
-            </div>
-            <h2 className="font-serif text-4xl lg:text-6xl text-stone-950 leading-tight">
-              Nuestra <span className="italic text-stone-700 font-light">Selección</span>
-            </h2>
-          </div>
-          
-          <Link to="/catalog" className="group flex items-center gap-3 text-stone-950 text-[10px] lg:text-[12px] tracking-[0.3em] uppercase font-black border-b-2 border-stone-950 pb-2 hover:text-accent hover:border-accent transition-all">
-            Ver Catálogo Completo
-            <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" />
-          </Link>
-        </div>
+      {/* ── 4. BANNER EDITORIAL ── */}
+      {/* IMAGEN SUGERIDA: panorámica ancha (aprox 1400×420px), ambiente de perfumería, mesa con frascos, fondo neutro cálido */}
+      <section className="relative w-full overflow-hidden bg-stone-950" style={{ height: 'clamp(220px, 30vw, 420px)' }}>
+        <img
+          src="/images/banner-editorial.jpg"
+          alt="Editorial"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          onError={e => { e.target.style.display = 'none' }}
+        />
+        {/* Fallback visual si no hay imagen */}
+        <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 70% 50%, #3d2e24 0%, transparent 60%), radial-gradient(circle at 20% 80%, #1a1410 0%, transparent 50%)" }} />
 
-        {loading ? (
-          <div className="flex justify-center items-center py-20 lg:py-40">
-            <div className="w-10 h-10 border-4 border-stone-200 border-t-stone-950 rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 lg:gap-x-12 gap-y-16 lg:gap-y-24">
-            {products.length > 0 ? (
-              products.map((perfume) => (
-                <div key={perfume.id} className="scale-100">
-                  <ProductCard product={perfume} />
+        {/* Líneas decorativas */}
+        <div className="editorial-line" style={{ top: '20%', left: 0, right: 0, height: '1px', opacity: 0.3 }} />
+        <div className="editorial-line" style={{ bottom: '20%', left: 0, right: 0, height: '1px', opacity: 0.3 }} />
+        <div className="editorial-line" style={{ top: 0, bottom: 0, left: '15%', width: '1px', opacity: 0.2 }} />
+        <div className="editorial-line" style={{ top: 0, bottom: 0, right: '15%', width: '1px', opacity: 0.2 }} />
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
+          <p className="text-[9px] tracking-[0.5em] uppercase text-white/40 mb-4">Colección exclusiva</p>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-6xl text-white italic font-light leading-tight">
+            El arte de la fragancia
+          </h2>
+          <div className="w-12 h-px bg-white/30 mt-6" />
+        </div>
+      </section>
+
+      <BrandShowcase />
+
+      {/* ── 7. SOMMELIER VIRTUAL ── */}
+      <section className="bg-white py-16 lg:py-28 border-t border-stone-200">
+        <div className="max-w-6xl mx-auto px-4 lg:px-8">
+          <div className="relative p-10 lg:p-20 bg-[#EFEBE4] overflow-hidden rounded-sm shadow-2xl border border-stone-200">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-40 mix-blend-multiply pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+              <div className="flex-1 text-center lg:text-left space-y-7">
+
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-stone-950 rounded-full text-[#F6F4F0] text-[8px] lg:text-[9px] tracking-[0.3em] uppercase font-black">
+                  <Sparkles size={12} className="text-stone-400" />
+                  Inteligencia Olfativa
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-24 bg-white border border-stone-200 shadow-sm">
-                <p className="text-stone-950 font-serif text-xl italic font-bold">Próximamente nuevas fragancias de autor.</p>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
 
-      {/* 5. SOMMELIER VIRTUAL - Estilo Boutique Luxe */}
-      <section className="bg-white py-16 lg:py-32 border-t border-stone-200">
-        <div className="max-w-6xl mx-auto px-4 lg:px-0">
-          <div className="relative p-10 lg:p-28 bg-[#EFEBE4] border-2 border-stone-300 overflow-hidden group rounded-sm shadow-2xl">
-             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')] opacity-50 mix-blend-multiply pointer-events-none"></div>
-             
-             <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
-                <div className="flex-1 text-center lg:text-left space-y-8 lg:space-y-10">
-                  
-                  <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-stone-950 border border-stone-950 rounded-full text-[#F6F4F0] text-[9px] lg:text-[10px] tracking-[0.3em] uppercase font-black shadow-lg">
-                    <Sparkles size={14} className="text-accent" />
-                    Inteligencia Olfativa
+                <h3 className="font-serif text-4xl lg:text-5xl text-stone-950 leading-tight">
+                  Encontrá tu <br /><span className="italic text-stone-600 font-light">Esencia</span> Ideal
+                </h3>
+
+                <p className="text-stone-700 text-sm lg:text-base leading-relaxed max-w-md mx-auto lg:mx-0">
+                  Nuestro Especialista Virtual utiliza tecnología de autor para recomendarte la fragancia que define tu carácter.
+                </p>
+
+                <button
+                  onClick={() => window.dispatchEvent(new Event('open-ai-chat'))}
+                  className="group inline-flex items-center gap-4 text-stone-950 text-[10px] lg:text-[11px] tracking-[0.3em] uppercase font-black"
+                >
+                  COMENZAR CONSULTA
+                  <div className="w-11 h-11 rounded-full border-2 border-stone-950 bg-transparent flex items-center justify-center group-hover:bg-stone-950 group-hover:text-white transition-all duration-500">
+                    <ArrowRight size={16} />
                   </div>
-                  
-                  <h3 className="font-serif text-4xl lg:text-6xl text-stone-950 leading-tight">
-                    Encontrá tu <br /> <span className="italic text-stone-700">Esencia</span> Ideal
-                  </h3>
-                  
-                  <p className="text-stone-900 font-bold text-sm lg:text-base leading-relaxed max-w-md mx-auto lg:mx-0">
-                    Nuestro Especialista Virtual utiliza tecnología de autor para recomendarte la fragancia que define tu carácter.
-                  </p>
-                  
-                  <button 
-                    onClick={() => window.dispatchEvent(new Event('open-ai-chat'))}
-                    className="flex items-center justify-center lg:justify-start gap-5 text-stone-950 text-[11px] lg:text-[13px] tracking-[0.3em] uppercase font-black group w-full lg:w-auto"
-                  >
-                    COMENZAR CONSULTA 
-                    <div className="w-12 h-12 rounded-full border-2 border-stone-950 bg-white flex items-center justify-center group-hover:bg-stone-950 group-hover:text-white transition-all duration-500 shadow-md">
-                      <ArrowRight size={18} />
-                    </div>
-                  </button>
-                </div>
+                </button>
+              </div>
 
-                <div className="relative hidden lg:block">
-                  <div className="w-64 h-64 border-2 border-stone-950/20 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm">
-                    <div className="w-56 h-56 border-2 border-stone-950 rounded-full flex items-center justify-center bg-stone-950 shadow-2xl group-hover:scale-105 transition-transform duration-700">
-                       <MessageCircle size={60} className="text-accent" strokeWidth={1} />
-                    </div>
-                  </div>
+              {/* Anillo decorativo desktop */}
+              <div className="relative hidden lg:flex items-center justify-center w-56 h-56 shrink-0">
+                <div className="absolute inset-0 border border-stone-300 rounded-full som-ring-spin" style={{ borderStyle: 'dashed' }} />
+                <div className="absolute inset-4 border border-stone-400/40 rounded-full" />
+                <div className="w-36 h-36 rounded-full bg-stone-950 flex items-center justify-center shadow-2xl">
+                  <MessageCircle size={48} className="text-stone-400" strokeWidth={1} />
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
     </div>
   )
 }

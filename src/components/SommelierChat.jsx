@@ -152,7 +152,7 @@ export default function SommelierChat() {
               </div>
               <h3 className="font-serif text-2xl text-primary mb-2 italic">Exclusivo</h3>
               <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-                Este servicio de Especialista Virtual es para clientes de Lumière Essence. Inicie sesión para recibir asesoramiento personalizado.
+                Este servicio de Especialista Virtual es para clientes de Lumière Essence. Inicie sesión para recibir asesoramiento virtual.
               </p>
               <a 
                 href="/login" // <-- Cambia esto por la ruta real de tu login
