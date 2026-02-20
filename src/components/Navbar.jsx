@@ -45,8 +45,14 @@ export default function Navbar() {
   }
 
   const handleCategoryClick = (category) => {
-    navigate(`/catalog?search=${category}`)
-    setIsOpen(false)
+    // Mapeamos el nombre del botón al valor exacto que espera tu base de datos/filtros
+    const genderMap = {
+      'Mujeres': 'Femeninos',
+      'Hombres': 'Masculinos',
+      'Unisex': 'Unisex'
+    };
+    navigate(`/catalog?gender=${genderMap[category] || category}`);
+    setIsOpen(false);
   }
 
   const openAIChat = () => {

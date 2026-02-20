@@ -31,15 +31,15 @@ export default function Hero() {
           {/* BLOQUE IZQUIERDO: Texto e Identidad */}
           <div className="lg:col-span-7 text-left">
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-stone-800 leading-[1.1] mb-6 lg:mb-8 drop-shadow-sm">
-              No es solo una fragancia.<br />
-              <span className="text-stone-500 italic font-light drop-shadow-sm">Es identidad.</span>
+              No es solo una fragancia,<br />
+              <span className="text-stone-500 italic font-light drop-shadow-sm">Es tu identidad.</span>
             </h1>
 
             {/* Quote */}
             <div className="relative mb-8 lg:mb-10 pl-5 border-l border-stone-300 py-1">
               <div className="absolute -left-4 -top-2 text-stone-200 text-4xl lg:text-6xl font-serif leading-none select-none">"</div>
               <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-stone-600 font-light tracking-wide italic relative z-10">
-                Tu presencia empieza antes de que hables.
+                Haz que una fragancia sea tu identidad.
               </p>
             </div>
 
