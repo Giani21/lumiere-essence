@@ -2,18 +2,17 @@ import { supabase } from './supabase'
 
 export const askIA = async (userQuestion, perfumes, chatHistory = []) => {
   try {
-    // Obtenemos la sesión actual de forma asíncrona
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // 1. Forzamos la obtención de la sesión actual
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (sessionError || !session) {
-      throw new Error("Sesión no válida o expirada.");
+    if (!session) {
+      console.error("No hay sesión activa");
+      return { text: "Debes iniciar sesión para consultar al sumiller.", recommendedIds: [] };
     }
 
-    // Invocamos la función pasando el token explícitamente
     const { data, error } = await supabase.functions.invoke('sommelier-ia', {
       body: { userQuestion, perfumes, chatHistory },
       headers: {
-        // Esto asegura que la Edge Function reciba el JWT del usuario logueado
         Authorization: `Bearer ${session.access_token}`
       }
     });
@@ -21,16 +20,12 @@ export const askIA = async (userQuestion, perfumes, chatHistory = []) => {
     if (error) throw error;
 
     return {
-      text: data?.text || "No obtuve respuesta.",
-      recommendedIds: data?.recommendedIds || []
+      text: data.text,
+      recommendedIds: data.recommendedIds
     };
 
   } catch (error) {
-    // Si es un 401, el error suele venir en error.context o similar
-    console.error("Error detallado:", error);
-    return { 
-      text: "Su sesión ha caducado o no tiene permisos. Por favor, reingrese.", 
-      recommendedIds: [] 
-    };
+    console.error("Error detallado en invoke:", error);
+    return { text: "Tu sesión ha expirado o no tienes permisos. Por favor, vuelve a ingresar.", recommendedIds: [] };
   }
 };
