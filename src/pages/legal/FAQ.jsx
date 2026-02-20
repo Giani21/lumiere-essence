@@ -5,7 +5,7 @@ import { Plus, Minus } from 'lucide-react'
 // Datos de preguntas
 const faqs = [
   {
-    q: "¿Los perfumes son originales?",
+    q: "¿Las fragancias son originales?",
     a: "Sí. Todos nuestros productos son 100% originales y provienen de distribución oficial. Vienen cerrados, intacto y sin uso."
   },
   {

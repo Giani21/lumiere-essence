@@ -195,7 +195,7 @@ export default function NewProduct() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-1">
                 <label className={labelClass}>Nombre Comercial</label>
-                <input required name="name" value={product.name} onChange={handleProductChange} className={inputClass} placeholder="Nombre del perfume" />
+                <input required name="name" value={product.name} onChange={handleProductChange} className={inputClass} placeholder="Nombre de la fragancia" />
               </div>
               <div>
                 <label className={labelClass}>Marca</label>

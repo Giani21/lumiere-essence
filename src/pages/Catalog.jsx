@@ -19,7 +19,7 @@ export default function Catalog() {
     const [priceRange, setPriceRange] = useState(Infinity)
     const [isBrandOpen, setIsBrandOpen] = useState(false)
 
-    const brands = ['Todas', 'Adriana Costantini', 'Benito Fernández', 'India Style', 'Ishtar', 'Laca Laboratorio', 'Laurencio Adot', 'Lotus', 'Mimo & Co', 'Nasa', 'Ona Saez', 'Pato Pampa', 'Prototype', 'Vanesa', 'Yagmour']
+    const brands = ['Todas', 'Benito Fernández', 'India Style', 'Ishtar', 'Laurencio Adot', 'Mimo & Co', 'Nasa', 'Ona Saez', 'Pato Pampa', 'Yagmour']
     const genders = ['Todas', 'Masculinos', 'Femeninos', 'Unisex']
     const types = ['Todas', 'Eau de Parfum', 'Eau de Toilette', 'Parfum', 'Extrait de Parfum', 'Colonia', 'Body Splash', 'Set de Regalos']
     const families = ['Todas', 'Oriental', 'Frutal', 'Floral', 'Amaderado', 'Cítrico']
