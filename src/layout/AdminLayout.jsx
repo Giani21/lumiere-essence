@@ -27,7 +27,7 @@ export default function AdminLayout() {
       {/* --- BOTÓN MENÚ MÓVIL (Solo visible en pantallas pequeñas) --- */}
       <div className="lg:hidden fixed top-0 left-0 w-full bg-slate-900 border-b border-slate-800 z-50 p-4 flex justify-between items-center shadow-xl">
         <div className="flex items-center gap-3">
-           <img src="/images/Logo.png" alt="Logo" className="w-8 h-8 object-contain brightness-125" />
+           <img src="/images/LogoLumiere.png" alt="Logo" className="w-8 h-8 object-contain brightness-125" />
            <span className="font-bold text-slate-100 text-xs tracking-widest uppercase">Admin Lumière</span>
         </div>
         <button 
@@ -55,7 +55,7 @@ export default function AdminLayout() {
         {/* Header con Logo (Oculto en el header flotante de móvil pero visible en el aside) */}
         <div className="p-8 lg:p-6 border-b border-slate-800 flex items-center gap-4">
           <img 
-            src="/images/Logo.png" 
+            src="/images/LogoLumiere.png" 
             alt="Admin" 
             className="w-10 h-10 lg:w-8 lg:h-8 object-contain brightness-125" 
           />
