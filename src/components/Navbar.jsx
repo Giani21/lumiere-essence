@@ -12,12 +12,22 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const { totalItems } = useCart()
   const { user, signOut } = useAuth()
 
   // Listado de marcas (mismas que usas en el catálogo)
-  const brands = ['Benito Fernández', 'India Style', 'Ishtar', 'Laurencio Adot', 'Mimo & Co', 'Nasa', 'Ona Saez', 'Pato Pampa', 'Yagmour']
+  const brands = [
+    'Benito Fernández',
+    'INDIA STYLE',
+    'ISHTAR',
+    'Laurencio Adot',
+    'MIMO',
+    'NASA',
+    'ONA Saez',
+    'Pato Pampa',
+    'YAGMOUR'
+  ]
 
   useEffect(() => {
     const handleChatStatus = (e) => {
@@ -56,7 +66,7 @@ export default function Navbar() {
   }
 
   const handleBrandClick = (brand) => {
-    navigate(`/catalog?search=${brand}`);
+    navigate(`/catalog?search=${encodeURIComponent(brand)}`);
     setIsOpen(false);
     setIsBrandsOpen(false);
   }
@@ -80,15 +90,15 @@ export default function Navbar() {
         ${isChatOpen ? '-translate-y-full' : 'translate-y-0'}
       `}>
         <div className="w-full px-4 sm:px-6 lg:px-12">
-          <div className="flex items-center justify-between h-20 md:h-24"> 
-            
+          <div className="flex items-center justify-between h-20 md:h-24">
+
             {/* LOGO */}
             <div className="flex items-center gap-4 w-1/4">
               <Link to="/">
-                <img 
-                  className="h-12 w-12 md:h-16 md:w-16 rounded-full border border-stone-200 object-cover p-0.5 bg-white transition-transform hover:scale-105 shadow-[0_4px_10px_rgba(0,0,0,0.05)]" 
-                  src="/images/Logo.png" 
-                  alt="Lumière Essence" 
+                <img
+                  className="h-12 w-12 md:h-16 md:w-16 rounded-full border border-stone-200 object-cover p-0.5 bg-white transition-transform hover:scale-105 shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
+                  src="/images/Logo.png"
+                  alt="Lumière Essence"
                 />
               </Link>
               <Link to="/" className="font-serif text-base md:text-lg text-stone-950 font-bold tracking-[0.2em] hover:text-accent hidden xl:block uppercase drop-shadow-sm">
@@ -149,7 +159,7 @@ export default function Navbar() {
                         <Link to="/orders" className="flex items-center gap-3 px-4 py-2 text-[10px] text-stone-950 hover:text-accent uppercase tracking-widest transition-colors font-black">
                           <Package size={14} /> Mis Pedidos
                         </Link>
-                        <button 
+                        <button
                           onClick={handleSignOut}
                           className="w-full flex items-center gap-3 px-4 py-2 text-[10px] text-stone-950 hover:text-red-600 uppercase tracking-widest transition-colors font-black"
                         >
@@ -203,9 +213,9 @@ export default function Navbar() {
               <p className="text-[9px] uppercase tracking-[0.2em] text-stone-950 mb-4 font-black">Categorías Rápidas</p>
               <div className="flex flex-wrap gap-3">
                 {['Mujer', 'Hombre', 'Unisex'].map((cat) => (
-                  <button 
+                  <button
                     key={cat}
-                    onClick={() => handleCategoryClick(cat)} 
+                    onClick={() => handleCategoryClick(cat)}
                     className="px-5 py-2.5 bg-white border border-stone-300 rounded-full text-[10px] uppercase tracking-widest text-stone-950 font-black hover:border-accent hover:text-accent transition-all shadow-sm"
                   >
                     {cat}
@@ -225,22 +235,23 @@ export default function Navbar() {
 
               {/* SECCIÓN MARCAS (ACORDEÓN) */}
               <div className="border-b border-stone-200">
-                <button 
+                <button
                   onClick={() => setIsBrandsOpen(!isBrandsOpen)}
                   className="w-full flex items-center justify-between text-stone-950 font-black text-sm uppercase tracking-widest py-6 hover:text-accent transition-colors"
                 >
                   Marcas
                   <ChevronDown size={18} className={`transition-transform duration-300 ${isBrandsOpen ? 'rotate-180 text-accent' : ''}`} />
                 </button>
-                
+
                 <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isBrandsOpen ? 'max-h-[500px] pb-6' : 'max-h-0'}`}>
                   <div className="grid grid-cols-2 gap-3">
                     {brands.map((brand) => (
                       <button
                         key={brand}
                         onClick={() => handleBrandClick(brand)}
-                        className="text-left py-2 px-3 text-[10px] text-stone-600 uppercase tracking-widest font-bold border border-stone-200 bg-white/50 rounded-sm active:bg-accent active:text-white transition-colors"
+                        className="text-left py-2 px-3 text-[10px] text-stone-950 uppercase tracking-widest font-black border border-stone-300 bg-white shadow-sm rounded-sm active:bg-accent transition-colors"
                       >
+                        {/* Usamos .toLowerCase() solo para lo visual si quieres que todo se vea igual */}
                         {brand}
                       </button>
                     ))}
@@ -252,11 +263,11 @@ export default function Navbar() {
                 <div className="flex items-center gap-4"><ShoppingBag size={18} strokeWidth={2} /> Mi Bolsa</div>
                 {totalItems > 0 && <span className="text-white bg-stone-950 border border-accent px-2 py-0.5 rounded-full font-black text-[10px] shadow-sm">{totalItems}</span>}
               </Link>
-              
+
               <Link to="/orders" onClick={() => setIsOpen(false)} className="group flex items-center gap-4 text-stone-950 font-black text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-accent transition-colors">
                 <Package size={18} strokeWidth={2} /> Mis Pedidos
               </Link>
-              
+
               <Link to="/wishlist" onClick={() => setIsOpen(false)} className="group flex items-center gap-4 text-stone-950 font-black text-sm uppercase tracking-widest py-6 border-b border-stone-200 hover:text-accent transition-colors">
                 <Heart size={18} strokeWidth={2} /> Favoritos
               </Link>

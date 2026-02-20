@@ -19,7 +19,17 @@ export default function Catalog() {
     const [priceRange, setPriceRange] = useState(Infinity)
     const [isBrandOpen, setIsBrandOpen] = useState(false)
 
-    const brands = ['Todas', 'Benito Fernández', 'India Style', 'Ishtar', 'Laurencio Adot', 'Mimo & Co', 'Nasa', 'Ona Saez', 'Pato Pampa', 'Yagmour']
+    const brands = [
+        'Benito Fernández', 
+        'INDIA STYLE', 
+        'ISHTAR', 
+        'Laurencio Adot', 
+        'MIMO', 
+        'NASA', 
+        'ONA Saez', 
+        'Pato Pampa', 
+        'YAGMOUR'
+      ]    
     const genders = ['Todas', 'Masculinos', 'Femeninos', 'Unisex']
     const types = ['Todas', 'Eau de Parfum', 'Eau de Toilette', 'Parfum', 'Extrait de Parfum', 'Colonia', 'Body Splash', 'Set de Regalos']
     const families = ['Todas', 'Oriental', 'Frutal', 'Floral', 'Amaderado', 'Cítrico']
@@ -56,11 +66,14 @@ export default function Catalog() {
 
     useEffect(() => {
         let result = products
-
+    
+        // Filtro de Búsqueda Normalizado
         if (searchQuery) {
+            const query = searchQuery.toLowerCase().trim();
             result = result.filter(p =>
-                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+                // Comparamos nombre y marca pasando todo a minúsculas
+                p.name.toLowerCase().includes(query) ||
+                p.brand.toLowerCase().includes(query)
             )
         }
 
