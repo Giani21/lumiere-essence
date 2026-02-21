@@ -133,7 +133,7 @@ export default function Footer() {
             </a>
 
             <div className="flex items-center gap-4 mt-2">
-              <SocialIcon href="https://www.instagram.com/lumiereessence/" icon={<Instagram size={14} strokeWidth={2.5} />} />
+              <SocialIcon href="https://www.instagram.com/lumiereessence.arg/" icon={<Instagram size={14} strokeWidth={2.5} />} />
               <SocialIcon href="https://wa.me/5491134873055" icon={<MessageCircle size={14} strokeWidth={2.5} />} />
             </div>
           </div>
