@@ -65,18 +65,18 @@ export default function Catalog() {
     }, [])
 
     useEffect(() => {
-        let result = products
+        let result = [...products] // Copia para no mutar el original
     
-        // Filtro de Búsqueda Normalizado
+        // 1. Filtro de Búsqueda Normalizado
         if (searchQuery) {
             const query = searchQuery.toLowerCase().trim();
             result = result.filter(p =>
-                // Comparamos nombre y marca pasando todo a minúsculas
                 p.name.toLowerCase().includes(query) ||
                 p.brand.toLowerCase().includes(query)
             )
         }
 
+        // 2. Filtros por Categoría/Marca/Género/Familia
         if (selectedBrand !== 'Todas') result = result.filter(p => p.brand === selectedBrand)
         if (selectedGender !== 'Todas') result = result.filter(p => p.gender === selectedGender)
 
@@ -92,6 +92,7 @@ export default function Catalog() {
 
         if (selectedFamily !== 'Todas') result = result.filter(p => p.olfactory_family === selectedFamily)
 
+        // 3. Filtro por Precio
         if (priceRange !== Infinity) {
             result = result.filter(p => {
                 if (!p.product_variants || p.product_variants.length === 0) return false
@@ -99,6 +100,21 @@ export default function Catalog() {
                 return minPrice <= priceRange
             })
         }
+
+        // --- NUEVA MEJORA: Lógica de Ordenamiento (Perfumes primero, Kits después) ---
+        // Priorizamos los productos que tienen al menos una variante con tamaño > 0ml
+        result.sort((a, b) => {
+            const aIsKit = a.product_variants?.some(v => v.size_ml === 0) ? 1 : 0;
+            const bIsKit = b.product_variants?.some(v => v.size_ml === 0) ? 1 : 0;
+
+            // Si uno es kit y el otro no, el kit (1) va después del perfume (0)
+            if (aIsKit !== bIsKit) {
+                return aIsKit - bIsKit;
+            }
+            
+            // Si ambos son del mismo tipo, mantenemos el orden por fecha de creación (establecido en Supabase)
+            return 0;
+        });
 
         setFilteredProducts(result)
     }, [products, searchQuery, selectedBrand, selectedGender, selectedType, selectedFamily, priceRange])
@@ -117,14 +133,12 @@ export default function Catalog() {
         <div className="bg-[#F6F4F0] min-h-screen pt-20 lg:pt-28 pb-32">
             <div className="max-w-[1600px] mx-auto px-4 lg:pl-8 lg:pr-12">
                 
-                {/* Breadcrumbs */}
                 <nav className="flex items-center gap-2 text-[9px] lg:text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-6 lg:mb-10">
                     <Link to="/" className="hover:text-accent transition-colors">Inicio</Link>
                     <ChevronRight size={10} />
                     <span className="text-stone-800 font-medium italic">Catálogo</span>
                 </nav>
 
-                {/* Header Catálogo */}
                 <div className="flex flex-col md:flex-row justify-between items-baseline mb-8 lg:mb-12 border-b border-stone-200 pb-8 gap-4">
                     <div className="space-y-1">
                         <h1 className="font-serif text-4xl lg:text-7xl text-stone-800 leading-tight">La Colección</h1>
@@ -146,7 +160,6 @@ export default function Catalog() {
 
                 <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
                     
-                    {/* Sidebar de Filtros */}
                     <aside className={`
                         fixed inset-0 z-[100] bg-[#F6F4F0] p-8 lg:p-0 
                         lg:block lg:inset-auto lg:z-0 transition-transform duration-500
@@ -164,7 +177,6 @@ export default function Catalog() {
                             </button>
                         </div>
 
-                        {/* Buscador Interno */}
                         <div className="relative group border-b border-stone-200 pb-4 mb-8">
                             <input
                                 type="text"
@@ -176,7 +188,6 @@ export default function Catalog() {
                             <Search className="absolute left-0 top-2.5 text-stone-400 group-focus-within:text-accent transition-colors" size={16} />
                         </div>
 
-                        {/* Filtro Marca con Dropdown Elegante */}
                         <div className="border-b border-stone-200 pb-6 mb-8">
                             <button onClick={() => setIsBrandOpen(!isBrandOpen)} className="flex justify-between items-center w-full group text-left">
                                 <div className="flex flex-col">
@@ -201,10 +212,8 @@ export default function Catalog() {
                         </div>
 
                         <div className="space-y-8 pb-10">
-                            {/* Género con Chips Modernos */}
                             <FilterGroup title="Género" options={genders} selected={selectedGender} setSelected={setSelectedGender} layout="chips" />
                             
-                            {/* Presupuesto con estilo de entrada premium */}
                             <div className="border-b border-stone-200 pb-6">
                                 <h3 className="text-stone-400 text-[9px] tracking-[0.3em] uppercase font-bold mb-4">Presupuesto Máximo</h3>
                                 <div className="relative flex items-center border-b border-stone-300 focus-within:border-accent transition-colors bg-white/30 px-3">
@@ -223,7 +232,6 @@ export default function Catalog() {
                             <FilterGroup title="Concentración" options={types} selected={selectedType} setSelected={setSelectedType} layout="list" />
                         </div>
 
-                        {/* Botones de Acción Sidebar */}
                         <div className="sticky bottom-0 bg-[#F6F4F0] pt-4 pb-10 space-y-4">
                             <button onClick={() => setIsFilterOpen(false)} className="w-full lg:hidden py-4 bg-stone-900 text-white text-[10px] tracking-[0.4em] uppercase font-black flex items-center justify-center gap-3 shadow-xl">
                                 <Check size={14} className="text-accent" /> Aplicar Filtros
@@ -236,7 +244,6 @@ export default function Catalog() {
                         </div>
                     </aside>
 
-                    {/* Grilla de Productos */}
                     <main className="flex-1">
                         {loading ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
@@ -269,6 +276,7 @@ export default function Catalog() {
     )
 }
 
+// Función auxiliar FilterGroup (se mantiene igual)
 function FilterGroup({ title, options, selected, setSelected, layout }) {
     const [isOpen, setIsOpen] = useState(true);
 
