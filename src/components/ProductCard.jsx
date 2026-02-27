@@ -5,8 +5,15 @@ import { Heart } from 'lucide-react'
 export default function ProductCard({ product }) {
   const [isWishlisted, setIsWishlisted] = useState(false)
   
-  const prices = product.product_variants?.map(v => v.price) || []
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0
+  // --- Lógica ajustada a tus tablas SQL ---
+  const variants = product.product_variants || []
+  
+  // Ordenamos para encontrar la variante con el precio más bajo
+  const sortedVariants = [...variants].sort((a, b) => a.price - b.price)
+  const cheapestVariant = sortedVariants[0]
+  
+  const minPrice = cheapestVariant?.price || 0
+  const hasMultipleSizes = variants.length > 1
 
   useEffect(() => {
     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
@@ -48,7 +55,7 @@ export default function ProductCard({ product }) {
           />
         </Link>
 
-        {/* BOTÓN WISHLIST - Más definido */}
+        {/* BOTÓN WISHLIST */}
         <button 
           onClick={toggleWishlist}
           className={`absolute top-3 right-3 lg:top-4 lg:right-4 p-2.5 rounded-full transition-all duration-300 z-10 ${
@@ -60,7 +67,6 @@ export default function ProductCard({ product }) {
           <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={2} />
         </button>
 
-        {/* Etiqueta de Categoría - Negro sólido */}
         {product.category && (
           <div className="absolute bottom-4 left-0 bg-stone-950 text-[#F6F4F0] px-3 py-1.5 text-[7px] lg:text-[9px] tracking-[0.2em] uppercase font-black">
             {product.category}
@@ -70,26 +76,38 @@ export default function ProductCard({ product }) {
 
       {/* --- CUERPO DE LA TARJETA --- */}
       <div className="p-4 lg:p-6 flex flex-col flex-grow text-center bg-white">
-        {/* Marca - Contraste alto */}
         <p className="text-accent text-[9px] lg:text-[11px] tracking-[0.3em] uppercase mb-1 lg:mb-2 font-black">
           {product.brand}
         </p>
         
-        {/* Nombre - Negro Stone 950 */}
         <h3 className="font-serif text-base lg:text-xl text-stone-950 mb-1 lg:mb-2 line-clamp-2 leading-tight">
           {product.name}
         </h3>
         
-        {/* Género - Gris oscuro nítido */}
         <p className="text-stone-500 text-[8px] lg:text-[10px] tracking-widest uppercase mb-4 font-bold">
           {product.gender}
         </p>
 
-        {/* Precio y Botón - Muy legible en móvil */}
+        {/* --- Precio con indicador de tamaño usando size_ml --- */}
         <div className="mt-auto pt-4 border-t border-stone-100 flex flex-col gap-3 lg:gap-4">
-          <span className="text-stone-950 font-serif text-lg lg:text-2xl font-bold">
-            ${minPrice.toLocaleString('es-AR')}
-          </span>
+          <div className="flex flex-col items-center">
+            {hasMultipleSizes && (
+              <span className="text-[10px] lg:text-[11px] text-stone-400 uppercase tracking-widest font-bold mb-1">
+                Desde
+              </span>
+            )}
+            <div className="flex items-baseline justify-center gap-1.5">
+              <span className="text-stone-950 font-serif text-lg lg:text-2xl font-bold">
+                ${minPrice.toLocaleString('es-AR')}
+              </span>
+              {/* Usamos size_ml del esquema SQL */}
+              {hasMultipleSizes && cheapestVariant?.size_ml && (
+                <span className="text-[10px] lg:text-xs text-stone-500 font-sans font-medium">
+                  ({cheapestVariant.size_ml}ml)
+                </span>
+              )}
+            </div>
+          </div>
 
           <Link 
             to={`/product/${product.slug}`}
