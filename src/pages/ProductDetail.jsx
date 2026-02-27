@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { ShoppingBag, Heart, ChevronRight, Ruler, Truck, ShieldCheck, Check } from 'lucide-react'
+import { ShoppingBag, Heart, ChevronRight, Ruler, Truck, ShieldCheck, Check, Share2, Link as LinkIcon } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 
 export default function ProductDetail() {
@@ -13,11 +13,11 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   
   const [showToast, setShowToast] = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
   
   const { addToCart } = useCart()
 
-  // Helper para formatear el tamaño o mostrar "SET"
   const formatSize = (ml) => {
     return ml < 1 ? "SET / KIT" : `${ml} ML`;
   };
@@ -94,6 +94,29 @@ export default function ProductDetail() {
     setTimeout(() => setShowToast(false), 3000)
   }
 
+  // --- NUEVA FUNCIONALIDAD: Compartir ---
+  const handleShare = async () => {
+    const shareData = {
+      title: `${product.name} de ${product.brand} | Lumière Essence`,
+      text: `Descubrí la fragancia ${product.name} en Lumière Essence.`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        // Abre el menú nativo en celulares (WhatsApp, etc)
+        await navigator.share(shareData);
+      } else {
+        // Fallback para PC: Copia el link al portapapeles
+        await navigator.clipboard.writeText(window.location.href);
+        setShowShareToast(true);
+        setTimeout(() => setShowShareToast(false), 3000);
+      }
+    } catch (err) {
+      console.error('Error al compartir:', err);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-light flex flex-col justify-center items-center">
@@ -115,7 +138,25 @@ export default function ProductDetail() {
   return (
     <div className="bg-light min-h-screen pt-24 pb-32 relative">
       
-      {/* --- TOAST NOTIFICATION --- */}
+      {/* --- MAGIA REACT 19: Etiquetas SEO Nativas --- */}
+      <title>{product.name} de {product.brand} | Lumière Essence</title>
+      <meta name="description" content={product.description?.substring(0, 150) + '...'} />
+      
+      {/* Open Graph / Facebook / WhatsApp */}
+      <meta property="og:type" content="product" />
+      <meta property="og:url" content={`https://lumiereessence.com.ar/product/${product.slug}`} />
+      <meta property="og:title" content={`${product.name} - ${product.brand}`} />
+      <meta property="og:description" content={product.description?.substring(0, 150) + '...'} />
+      <meta property="og:image" content={product.image_url || 'https://lumiereessence.com.ar/images/og-banner.jpg'} />
+      
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={`https://lumiereessence.com.ar/product/${product.slug}`} />
+      <meta name="twitter:title" content={`${product.name} - ${product.brand}`} />
+      <meta name="twitter:description" content={product.description?.substring(0, 150) + '...'} />
+      <meta name="twitter:image" content={product.image_url || 'https://lumiereessence.com.ar/images/og-banner.jpg'} />
+
+      {/* --- TOAST: CARRITO --- */}
       <div 
         className={`fixed top-24 right-4 sm:right-12 z-[100] bg-primary border border-accent/30 text-light px-6 py-4 shadow-2xl flex items-center gap-4 transform transition-all duration-500 ease-out ${
           showToast ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0 pointer-events-none'
@@ -131,6 +172,16 @@ export default function ProductDetail() {
           </p>
         </div>
         <Link to="/cart" className="ml-6 text-[10px] tracking-widest uppercase border-b border-gray-500 hover:text-accent pb-0.5">Ver Bolsa</Link>
+      </div>
+
+      {/* --- TOAST: ENLACE COPIADO --- */}
+      <div 
+        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-primary border border-accent/30 text-light px-6 py-3 shadow-2xl flex items-center gap-3 rounded-full transform transition-all duration-500 ease-out ${
+          showShareToast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'
+        }`}
+      >
+        <LinkIcon size={14} className="text-accent" />
+        <span className="text-[10px] tracking-widest uppercase font-bold text-accent">Enlace copiado</span>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
@@ -220,12 +271,12 @@ export default function ProductDetail() {
               </p>
             </div>
 
-            {/* --- ACCIONES --- */}
-            <div className="flex gap-4 mb-12">
+            {/* --- ACCIONES (Comprar, Favoritos, Compartir) --- */}
+            <div className="flex gap-4 mb-12 h-14">
               <button 
                 onClick={handleAddToCart}
                 disabled={!selectedVariant || selectedVariant.stock === 0}
-                className="relative flex-1 bg-primary text-light overflow-hidden flex items-center justify-center gap-3 py-4.5 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.3em] text-[10px] uppercase disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed group active:scale-[0.98]"
+                className="relative flex-1 bg-primary text-light overflow-hidden flex items-center justify-center gap-3 hover:bg-accent hover:text-primary transition-all duration-500 font-bold tracking-[0.3em] text-[10px] uppercase disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed group active:scale-[0.98]"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shine_1.5s_ease-in-out]"></div>
                 <span className="relative z-10">Añadir al Carrito</span>
@@ -237,14 +288,23 @@ export default function ProductDetail() {
                 className={`w-14 flex items-center justify-center border transition-all duration-500 ${
                   isWishlisted 
                     ? 'bg-rose-50 border-rose-200 text-rose-500 shadow-inner' 
-                    : 'border-gray-200 text-gray-300 hover:border-accent hover:text-accent'
+                    : 'border-gray-200 text-gray-400 hover:border-accent hover:text-accent bg-white'
                 }`}
+                title="Añadir a favoritos"
               >
                 <Heart 
                   size={20} 
                   strokeWidth={1.5} 
                   fill={isWishlisted ? "currentColor" : "none"} 
                 />
+              </button>
+
+              <button 
+                onClick={handleShare}
+                className="w-14 flex items-center justify-center border border-gray-200 text-gray-400 hover:border-accent hover:text-accent bg-white transition-all duration-500"
+                title="Compartir fragancia"
+              >
+                <Share2 size={20} strokeWidth={1.5} />
               </button>
             </div>
 

@@ -1,56 +1,53 @@
+import { Suspense, lazy } from 'react'
 import { Routes, Route, Outlet } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 
-// COMPONENTES GLOBALES
+// COMPONENTES GLOBALES Y LAYOUTS (Carga estática, siempre visibles)
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import SommelierChat from './components/SommelierChat'
 import AuthRedirect from './components/AuthRedirect'
-
-// PÁGINAS PÚBLICAS
-import Home from './pages/Home'
-import Catalog from './pages/Catalog'
-import ProductDetail from './pages/ProductDetail'
-import Cart from './pages/Cart'
-import Wishlist from './pages/Wishlist'
-import Orders from './pages/Orders'
-
-// PÁGINAS DE AUTH
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import UpdatePassword from './pages/UpdatePassword'
-
-// PÁGINAS LEGALES
-import Terms from './pages/legal/Terms'
-import Privacy from './pages/legal/Privacy'
-import Returns from './pages/legal/Returns'
-import FAQ from './pages/legal/FAQ'
-
-//Checkout
-import Checkout from './pages/Checkout'
-import Success from './pages/Success'
-
-// PÁGINAS DE ERROR
-import NotFound from './pages/NotFound'
-
-// ADMIN IMPORTS
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './layout/AdminLayout'
-import Dashboard from './pages/admin/Dashboard'
-import AdminProducts from './pages/admin/AdminProducts'
-import NewProduct from './pages/admin/NewProduct'
-import AdminOrders from './pages/admin/AdminOrders'
+
+// PÁGINAS (Carga Diferida / Lazy Loading)
+const Home = lazy(() => import('./pages/Home'))
+const Catalog = lazy(() => import('./pages/Catalog'))
+const ProductDetail = lazy(() => import('./pages/ProductDetail'))
+const Cart = lazy(() => import('./pages/Cart'))
+const Wishlist = lazy(() => import('./pages/Wishlist'))
+const Orders = lazy(() => import('./pages/Orders'))
+
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const UpdatePassword = lazy(() => import('./pages/UpdatePassword'))
+
+const Terms = lazy(() => import('./pages/legal/Terms'))
+const Privacy = lazy(() => import('./pages/legal/Privacy'))
+const Returns = lazy(() => import('./pages/legal/Returns'))
+const FAQ = lazy(() => import('./pages/legal/FAQ'))
+
+const Checkout = lazy(() => import('./pages/Checkout'))
+const Success = lazy(() => import('./pages/Success'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+
+// ADMIN PAGES
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
+const NewProduct = lazy(() => import('./pages/admin/NewProduct'))
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
+
 
 // --- LAYOUTS INTERNOS ---
 
-// 1. Layout Público: Muestra Navbar, Footer y Chat
 const PublicLayout = () => {
   return (
     <>
       <Navbar />
       <main className="flex-grow">
-        <Outlet /> {/* Aquí se renderiza el contenido de la página */}
+        <Outlet />
       </main>
       <SommelierChat />
       <Footer />
@@ -58,7 +55,6 @@ const PublicLayout = () => {
   )
 }
 
-// 2. Layout Auth/Simple: Centrado, sin Navbar ni Footer
 const SimpleLayout = () => {
   return (
     <main className="flex-grow flex flex-col justify-center min-h-[80vh]">
@@ -67,57 +63,68 @@ const SimpleLayout = () => {
   )
 }
 
+// Componente de carga visual mientras se descarga la página solicitada
+const PageLoader = () => (
+  <div className="flex-grow flex items-center justify-center min-h-[60vh]">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 size={32} className="animate-spin text-stone-300" />
+      <span className="text-[10px] uppercase tracking-widest text-stone-400 font-bold">Cargando...</span>
+    </div>
+  </div>
+)
+
 function App() {
   return (
     <div className="min-h-screen bg-light font-sans text-primary flex flex-col">
       <ScrollToTop />
       <AuthRedirect />
 
-      <Routes>
-        
-        {/* === ZONA 1: PÚBLICA (Con Navbar y Footer) === */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/product/:slug" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/orders" element={<Orders />} />
+      {/* Suspense envuelve las rutas y muestra el PageLoader mientras React descarga el código de la página */}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
           
-          {/* Legales */}
-          <Route path="/legal/terms" element={<Terms />} />
-          <Route path="/legal/privacy" element={<Privacy />} />
-          <Route path="/legal/returns" element={<Returns />} />
-          <Route path="/legal/faq" element={<FAQ />} />
-        </Route>
-
-        {/* Checkout */}
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/success" element={<Success />} />
-
-
-        {/* === ZONA 2: AUTH & ERRORES (Sin Navbar/Footer) === */}
-        <Route element={<SimpleLayout />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/update-password" element={<UpdatePassword />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-
-
-        {/* === ZONA 3: ADMIN (Protegida y con su propio Layout) === */}
-        <Route path="/admin" element={<AdminRoute />}> {/* Primero verifica seguridad */}
-          <Route element={<AdminLayout />}>            {/* Luego aplica diseño admin */}
-            <Route index element={<Dashboard />} /> 
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="products/new" element={<NewProduct />} />
-            <Route path="products/edit/:id" element={<NewProduct />} />
-            <Route path="orders" element={<AdminOrders />} />
+          {/* === ZONA 1: PÚBLICA (Con Navbar y Footer) === */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/orders" element={<Orders />} />
+            
+            {/* Legales */}
+            <Route path="/legal/terms" element={<Terms />} />
+            <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/legal/returns" element={<Returns />} />
+            <Route path="/legal/faq" element={<FAQ />} />
           </Route>
-        </Route>
 
-      </Routes>
+          {/* Checkout */}
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/success" element={<Success />} />
+
+          {/* === ZONA 2: AUTH & ERRORES (Sin Navbar/Footer) === */}
+          <Route element={<SimpleLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+
+          {/* === ZONA 3: ADMIN (Protegida y con su propio Layout) === */}
+          <Route path="/admin" element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<Dashboard />} /> 
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="products/new" element={<NewProduct />} />
+              <Route path="products/edit/:id" element={<NewProduct />} />
+              <Route path="orders" element={<AdminOrders />} />
+            </Route>
+          </Route>
+
+        </Routes>
+      </Suspense>
     </div>
   )
 }
