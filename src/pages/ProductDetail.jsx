@@ -96,24 +96,31 @@ export default function ProductDetail() {
 
   // --- NUEVA FUNCIONALIDAD: Compartir ---
   const handleShare = async () => {
-    const shareData = {
-      title: `${product.name} de ${product.brand} | Lumière Essence`,
-      text: `Descubrí la fragancia ${product.name} en Lumière Essence.`,
-      url: window.location.href
-    };
+    const url = window.location.href;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     try {
-      if (navigator.share) {
-        // Abre el menú nativo en celulares (WhatsApp, etc)
-        await navigator.share(shareData);
+      // Si es un celular y soporta compartir, abrimos el menú de WhatsApp/Instagram
+      if (isMobile && navigator.share) {
+        await navigator.share({
+          title: `${product.name} | Lumière Essence`,
+          text: `Descubrí la fragancia ${product.name} en Lumière Essence.`,
+          url: url
+        });
       } else {
-        // Fallback para PC: Copia el link al portapapeles
-        await navigator.clipboard.writeText(window.location.href);
+        // En computadora (o si falla el celular), forzamos copiar al portapapeles
+        await navigator.clipboard.writeText(url);
         setShowShareToast(true);
         setTimeout(() => setShowShareToast(false), 3000);
       }
     } catch (err) {
-      console.error('Error al compartir:', err);
+      // Si el usuario cancela o hay un error, no hacemos nada que rompa la app
+      console.log('Compartir cancelado o no soportado:', err);
+      // Como plan de rescate extremo, copiamos al portapapeles
+      navigator.clipboard.writeText(url).then(() => {
+        setShowShareToast(true);
+        setTimeout(() => setShowShareToast(false), 3000);
+      });
     }
   }
 
