@@ -139,7 +139,7 @@ export default function Hero() {
             <span style={{ fontStyle: 'bold' }}>PRESENCIA.</span>
           </h1>
 
-          <p className="anim-fade-up-3" style={{ fontSize: '13px', fontWeight: 300, lineHeight: 1.75, color: '#6b6560', marginBottom: '28px' }}>
+          <p className="text-center anim-fade-up-3" style={{ fontSize: '18px', fontWeight: 300, lineHeight: 1.75, color: '#1c1a17', marginBottom: '28px' }}>
             Haz que tu rastro sea inolvidable.
           </p>
 
