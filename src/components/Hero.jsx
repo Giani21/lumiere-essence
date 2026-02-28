@@ -197,7 +197,7 @@ export default function Hero() {
                     Lumiere Essence
                   </span>
                 </div>
-                <h1 className=" text-center hero-title anim-fade-up-2" style={{
+                <h1 className="hero-title anim-fade-up-2" style={{
                   fontSize: 'clamp(32px, 5vw, 54px)', // Bajamos el máximo de 60 a 54 para que no sea invasivo
                   fontWeight: 200,                    // Más fino = más elegante en pantallas grandes
                   lineHeight: 1.05,                   // Reducimos el espacio entre líneas para un look compacto
