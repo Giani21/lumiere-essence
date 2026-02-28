@@ -187,7 +187,7 @@ export default function Home() {
         <div className="editorial-line" style={{ top: 0, bottom: 0, right: '15%', width: '1px', opacity: 0.2 }} />
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
-          <p className="text-[9px] tracking-[0.5em] uppercase text-white/40 mb-4">Colección exclusiva</p>
+          <p className="text-[9px] tracking-[0.5em] uppercase text-white mb-4">Colección exclusiva</p>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-6xl text-white italic font-light leading-tight">
             El arte de la fragancia
           </h2>
