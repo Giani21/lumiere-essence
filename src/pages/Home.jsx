@@ -104,28 +104,27 @@ export default function Home() {
             <img src="/images/Femenina1.png" alt="Fragancias Femeninas" className="absolute inset-0 w-full h-full object-cover object-top" />
             <div className="cat-overlay bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
             <div className="cat-label absolute bottom-0 left-0 right-0 p-6">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1">01</p>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1"></p>
               <h2 className="font-serif text-2xl text-white italic leading-tight mb-3">Fragancias<br />Femeninas</h2>
               <div className="cat-bar bg-white/60"></div>
             </div>
           </Link>
 
-          <Link to="/catalog?gender=Todas" className="cat-card rounded-sm h-[150px] bg-stone-950 justify-center items-center">
+        
             <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 30% 50%, #4a3728 0%, transparent 60%), radial-gradient(circle at 80% 30%, #2a1f18 0%, transparent 50%)" }} />
             <div className="absolute w-40 h-40 border border-stone-700/25 rounded-full" />
             <div className="absolute w-28 h-28 border border-stone-600/20 rounded-full" />
             <div className="cat-label text-center px-6">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-2">02</p>
-              <h2 className="font-serif text-2xl italic leading-tight mb-3 unisex-shimmer">Fragancias<br />Unisex</h2>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-2"></p>
+              <h2 className="font-serif text-2xl italic leading-tight mb-3 unisex-shimmer">Lumiere<br />Essence</h2>
               <div className="cat-bar bg-stone-500/50 mx-auto"></div>
             </div>
-          </Link>
 
           <Link to="/catalog?gender=Masculinos" className="cat-card rounded-sm h-[260px]">
             <img src="/images/Masculino1.png" alt="Fragancias Masculinas" className="absolute inset-0 w-full h-full object-cover object-top" />
             <div className="cat-overlay bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
             <div className="cat-label absolute bottom-0 left-0 right-0 p-6">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1">03</p>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-1"></p>
               <h2 className="font-serif text-2xl text-white italic leading-tight mb-3">Fragancias<br />Masculinas</h2>
               <div className="cat-bar bg-white/60"></div>
             </div>
@@ -138,29 +137,27 @@ export default function Home() {
             <img src="/images/Femenina1.png" alt="Fragancias Femeninas" className="absolute inset-0 w-full h-full object-cover object-top" />
             <div className="cat-overlay bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
             <div className="cat-label absolute bottom-0 left-0 right-0 p-8 lg:p-10">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2">01</p>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2"></p>
               <h2 className="font-serif text-3xl lg:text-4xl text-white italic leading-tight mb-4">Fragancias<br />Femeninas</h2>
               <div className="cat-bar bg-white/60"></div>
             </div>
           </Link>
 
-          <Link to="/catalog?gender=Todas" className="cat-card h-[520px] lg:h-[620px] bg-stone-950 justify-center items-center">
-            <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 25% 60%, #4a3728 0%, transparent 55%), radial-gradient(circle at 80% 25%, #2a1f18 0%, transparent 50%), radial-gradient(circle at 60% 80%, #1a1410 0%, transparent 40%)" }} />
+ 
             <div className="absolute w-80 h-80 border border-stone-700/25 rounded-full" />
             <div className="absolute w-60 h-60 border border-stone-600/20 rounded-full" />
             <div className="absolute w-40 h-40 border border-stone-500/15 rounded-full" />
             <div className="cat-label text-center px-8">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-3">02</p>
-              <h2 className="font-serif text-3xl lg:text-4xl italic leading-tight mb-4 unisex-shimmer">Fragancias<br />Unisex</h2>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-stone-500 mb-3"></p>
+              <h2 className="font-serif text-3xl lg:text-4xl italic leading-tight mb-4 unisex-shimmer">Lumiere<br />Essence</h2>
               <div className="cat-bar bg-stone-500/50 mx-auto"></div>
             </div>
-          </Link>
 
           <Link to="/catalog?gender=Masculinos" className="cat-card h-[520px] lg:h-[620px]">
             <img src="/images/Masculino1.png" alt="Fragancias Masculinas" className="absolute inset-0 w-full h-full object-cover object-top" />
             <div className="cat-overlay bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
             <div className="cat-label absolute bottom-0 left-0 right-0 p-8 lg:p-10">
-              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2">03</p>
+              <p className="text-[8px] tracking-[0.4em] uppercase text-white/40 mb-2"></p>
               <h2 className="font-serif text-3xl lg:text-4xl text-white italic leading-tight mb-4">Fragancias<br />Masculinas</h2>
               <div className="cat-bar bg-white/60"></div>
             </div>
