@@ -105,7 +105,7 @@ export default function Hero() {
       <section className="hero-root md:hidden bg-[#F6F4F0] flex flex-col">
         <div className="grain-overlay" />
 
-        <div className="relative w-full overflow-hidden" style={{height:'58vw', minHeight:'220px', maxHeight:'360px'}}>
+        <div className="relative w-full overflow-hidden" style={{ height: '58vw', minHeight: '220px', maxHeight: '360px' }}>
           {[...Array(totalFragrances)].map((_, i) => (
             <img
               key={i}
@@ -120,23 +120,33 @@ export default function Hero() {
         <div className="flex-1 flex flex-col px-6 pt-4 pb-2">
           <div className="anim-fade-up-1 flex items-center gap-3 mb-5">
             <div className="h-px w-8 bg-stone-400 stroke" />
-            <span style={{fontSize:'12px',letterSpacing:'0.3em',textTransform:'uppercase',color:'#000000',fontWeight:400}}>
-               Lumiere Essence
+            <span style={{ fontSize: '12px', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#000000', fontWeight: 400 }}>
+              Lumiere Essence
             </span>
           </div>
 
-          <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(28px,11vw,52px)',fontWeight:250,lineHeight:1.08,color:'#1c1a17',marginBottom:'16px'}}>
-            TU FRAGANCIA<br />CONVERTIDA EN<br />PRESENCIA.
+          <h1 className="hero-title anim-fade-up-2" style={{
+            fontSize: 'clamp(24px, 8vw, 42px)',
+            fontWeight: 200,
+            lineHeight: 1.1,
+            color: '#1c1a17',
+            marginBottom: '24px',
+            letterSpacing: '0.02em', // Corregido: camelCase en lugar de guion
+            textTransform: 'uppercase'
+          }}>
+            TU FRAGANCIA<br />
+            CONVERTIDA EN<br />
+            <span style={{ fontStyle: 'italic' }}>PRESENCIA.</span>
           </h1>
 
-          <p className="anim-fade-up-3" style={{fontSize:'13px',fontWeight:300,lineHeight:1.75,color:'#6b6560',marginBottom:'28px'}}>
+          <p className="anim-fade-up-3" style={{ fontSize: '13px', fontWeight: 300, lineHeight: 1.75, color: '#6b6560', marginBottom: '28px' }}>
             Haz que tu rastro sea inolvidable.
           </p>
 
           <div className="anim-fade-up-4 flex flex-col gap-3">
             <Link to="/catalog" className="cta-btn justify-center w-full">
               <span>Explorar Colección</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
             </Link>
           </div>
         </div>
@@ -145,25 +155,25 @@ export default function Hero() {
         <div className="border-t border-stone-300/40 bg-white/40 backdrop-blur-md">
           <div className="px-6 py-6 overflow-x-auto no-scrollbar">
             <div className="flex items-center gap-8 min-w-[max-content]">
-              <BenefitItem 
+              <BenefitItem
                 icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />}
-                title="Marcas Premium" subtitle="100% Originales" 
+                title="Marcas Premium" subtitle="100% Originales"
               />
-              <BenefitItem 
+              <BenefitItem
                 icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />}
-                title="Envíos Rápidos" subtitle="CABA y Alrededores" 
+                title="Envíos Rápidos" subtitle="CABA y Alrededores"
               />
-              <BenefitItem 
+              <BenefitItem
                 icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />}
-                title="Especialista Virtual" subtitle="Asistencia con IA 24/7" 
+                title="Especialista Virtual" subtitle="Asistencia con IA 24/7"
               />
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ══ DESKTOP LAYOUT (≥ md) ══ */}
-      <section className="hero-root relative min-h-[100svh] bg-[#F6F4F0] overflow-hidden hidden md:flex flex-col">
+      < section className="hero-root relative min-h-[100svh] bg-[#F6F4F0] overflow-hidden hidden md:flex flex-col" >
         <div className="grain-overlay" />
 
         <div className="hero-image-wrap absolute inset-0 left-[38%] z-0">
@@ -183,23 +193,32 @@ export default function Hero() {
               <div className="max-w-[52%] lg:max-w-[46%]">
                 <div className="anim-fade-up-1 flex items-center gap-4 mb-8 lg:mb-10">
                   <div className="h-px w-10 bg-stone-400"></div>
-                  <span style={{fontSize:'9px',letterSpacing:'0.3em',textTransform:'uppercase',color:'#9c9189'}}>
+                  <span style={{ fontSize: '9px', letterSpacing: '0.3em', textTransform: 'uppercase', color: '#9c9189' }}>
                     Lumiere Essence
                   </span>
                 </div>
-
-                <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(26px,4vw,60px)',fontWeight:250,lineHeight:1.1,color:'#1c1a17',marginBottom:'24px'}}>
-                  TU FRAGANCIA<br />CONVERTIDA EN<br />PRESENCIA.
+                <h1 className="hero-title anim-fade-up-2" style={{
+                  fontSize: 'clamp(32px, 5vw, 54px)', // Bajamos el máximo de 60 a 54 para que no sea invasivo
+                  fontWeight: 200,                    // Más fino = más elegante en pantallas grandes
+                  lineHeight: 1.05,                   // Reducimos el espacio entre líneas para un look compacto
+                  color: '#1c1a17',
+                  marginBottom: '32px',               // Más espacio abajo para que el botón "respire"
+                  letterSpacing: '-0.01em',           // Un toque sutil de tracking negativo para estilo editorial
+                  textTransform: 'uppercase'
+                }}>
+                  TU FRAGANCIA<br />
+                  CONVERTIDA EN<br />
+                  <span style={{ fontStyle: 'italic', fontWeight: 300 }}>PRESENCIA.</span>
                 </h1>
 
-                <p className="anim-fade-up-3" style={{fontSize:'16px',fontWeight:300,lineHeight:1.8,color:'#6b6560',maxWidth:'400px',marginBottom:'48px'}}>
+                <p className="anim-fade-up-3" style={{ fontSize: '16px', fontWeight: 300, lineHeight: 1.8, color: '#6b6560', maxWidth: '400px', marginBottom: '48px' }}>
                   Haz que tu rastro sea inolvidable.
                 </p>
 
                 <div className="anim-fade-up-4">
                   <Link to="/catalog" className="cta-btn">
                     <span>Explorar Colección</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
                   </Link>
                 </div>
               </div>
@@ -209,23 +228,23 @@ export default function Hero() {
           <div className="relative z-10 border-t border-stone-300/40 bg-white/40 backdrop-blur-md">
             <div className="max-w-7xl mx-auto px-10 lg:px-12 py-8 lg:py-10 overflow-x-auto no-scrollbar">
               <div className="flex items-center justify-between min-w-[max-content] lg:min-w-0 gap-10 lg:gap-8">
-                <BenefitItem 
+                <BenefitItem
                   icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />}
-                  title="Marcas Premium" subtitle="100% Originales" 
+                  title="Marcas Premium" subtitle="100% Originales"
                 />
-                <BenefitItem 
+                <BenefitItem
                   icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />}
-                  title="Envíos Rápidos" subtitle="CABA y Alrededores" 
+                  title="Envíos Rápidos" subtitle="CABA y Alrededores"
                 />
-                <BenefitItem 
+                <BenefitItem
                   icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />}
-                  title="Especialista Virtual" subtitle="Asistencia con IA 24/7" 
+                  title="Especialista Virtual" subtitle="Asistencia con IA 24/7"
                 />
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </section >
     </>
   )
 }
