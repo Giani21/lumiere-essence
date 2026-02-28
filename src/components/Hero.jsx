@@ -134,9 +134,9 @@ export default function Hero() {
             letterSpacing: '0.02em', // Corregido: camelCase en lugar de guion
             textTransform: 'uppercase'
           }}>
-            TU FRAGANCIA<br />
+            TU PRESENCIA<br />
             CONVERTIDA EN<br />
-            <span style={{ fontStyle: 'bold' }}>PRESENCIA.</span>
+            <span style={{ fontStyle: 'bold' }}>FRAGANCIA.</span>
           </h1>
 
           <p className="text-center anim-fade-up-3" style={{ fontSize: '18px', fontWeight: 300, lineHeight: 1.75, color: '#1c1a17', marginBottom: '28px' }}>
@@ -206,9 +206,9 @@ export default function Hero() {
                   letterSpacing: '-0.01em',           // Un toque sutil de tracking negativo para estilo editorial
                   textTransform: 'uppercase'
                 }}>
-                  TU FRAGANCIA<br />
+                  TU PRESENCIA<br />
                   CONVERTIDA EN<br />
-                  <span style={{ fontStyle: 'bold', fontWeight: 300 }}>PRESENCIA.</span>
+                  <span style={{ fontStyle: 'bold', fontWeight: 300 }}>FRAGANCIA.</span>
                 </h1>
 
                 <p className="anim-fade-up-3" style={{ fontSize: '16px', fontWeight: 300, lineHeight: 1.8, color: '#6b6560', maxWidth: '400px', marginBottom: '48px' }}>
