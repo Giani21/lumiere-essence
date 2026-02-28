@@ -78,22 +78,27 @@ export default function BrandShowcase() {
     }
   }, [])
 
+  const lastTickTime = useRef(performance.now());
+
   const tick = useCallback(() => {
+    const now = performance.now();
+    const deltaTime = (now - lastTickTime.current) / 16.66; // Normalizado a 60fps
+    lastTickTime.current = now;
+  
     if (!isDragging.current) {
-      // Aplicamos fricción a la velocidad de inercia
-      velocity.current *= 0.95 
+      velocity.current *= 0.95;
       
-      // Si la velocidad es muy baja, volvemos al auto-scroll base
       if (Math.abs(velocity.current) < 0.1) {
-        velocity.current = SPEED_AUTO
+        velocity.current = SPEED_AUTO;
       }
       
-      posRef.current += velocity.current
-      clampLoop()
-      applyPos()
+      // Multiplicamos por deltaTime para que si hay lag, el movimiento compense
+      posRef.current += velocity.current * deltaTime;
+      clampLoop();
+      applyPos();
     }
-    rafRef.current = requestAnimationFrame(tick)
-  }, [clampLoop, applyPos])
+    rafRef.current = requestAnimationFrame(tick);
+  }, [clampLoop, applyPos]);
 
   useEffect(() => {
     const card = trackRef.current?.querySelector('.brand-slide')
@@ -167,6 +172,9 @@ export default function BrandShowcase() {
           display: flex;
           gap: 16px;
           will-change: transform;
+          transform: translateZ(0); 
+          backface-visibility: hidden;
+          perspective: 1000px;
         }
         .brand-slide {
           flex-shrink: 0;
