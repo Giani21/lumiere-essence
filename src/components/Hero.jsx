@@ -119,8 +119,8 @@ export default function Hero() {
 
         <div className="flex-1 flex flex-col px-6 pt-4 pb-2">
           <div className="anim-fade-up-1 flex items-center gap-3 mb-5">
-            <div className="h-px w-8 bg-stone-400" />
-            <span style={{fontSize:'9px',letterSpacing:'0.3em',textTransform:'uppercase',color:'#000000',fontWeight:400}}>
+            <div className="h-px w-8 bg-stone-400 stroke" />
+            <span style={{fontSize:'12px',letterSpacing:'0.3em',textTransform:'uppercase',color:'#000000',fontWeight:400}}>
                Lumiere Essence
             </span>
           </div>
