@@ -126,7 +126,7 @@ export default function Hero() {
           </div>
 
           <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(38px,11vw,52px)',fontWeight:300,lineHeight:1.08,color:'#1c1a17',marginBottom:'16px'}}>
-            Tu fragancia<br />convertida en<br /><em style={{fontStyle:'normal',fontWeight:300, fontStyle:'bold'}}>presencia.</em>
+            Tu fragancia<br />convertida en<br />presencia.
           </h1>
 
           <p className="anim-fade-up-3" style={{fontSize:'13px',fontWeight:300,lineHeight:1.75,color:'#6b6560',marginBottom:'28px'}}>
