@@ -65,6 +65,11 @@ export default function ProductDetail() {
     }
   }, [slug])
 
+  const formatName = (name) => {
+    if (!name) return "";
+    return name.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
+
   const toggleWishlist = () => {
     if (!product) return
     const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
@@ -146,13 +151,13 @@ export default function ProductDetail() {
     <div className="bg-light min-h-screen pt-24 pb-32 relative">
       
       {/* --- MAGIA REACT 19: Etiquetas SEO Nativas --- */}
-      <title>{product.name} de {product.brand} | Lumière Essence</title>
+      <title>{formatName(product.name)} de {product.brand} | Lumière Essence</title>
       <meta name="description" content={product.description?.substring(0, 150) + '...'} />
       
       {/* Open Graph / Facebook / WhatsApp */}
       <meta property="og:type" content="product" />
       <meta property="og:url" content={`https://lumiereessence.com.ar/product/${product.slug}`} />
-      <meta property="og:title" content={`${product.name} - ${product.brand}`} />
+      <meta property="og:title" content={`${formatName(product.name)} - ${product.brand}`} />
       <meta property="og:description" content={product.description?.substring(0, 150) + '...'} />
       <meta property="og:image" content={product.image_url || 'https://lumiereessence.com.ar/images/og-banner.jpg'} />
       

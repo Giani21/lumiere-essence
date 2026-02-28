@@ -4,14 +4,14 @@ import { Heart } from 'lucide-react'
 
 export default function ProductCard({ product }) {
   const [isWishlisted, setIsWishlisted] = useState(false)
-  
+
   // --- Lógica ajustada a tus tablas SQL ---
   const variants = product.product_variants || []
-  
+
   // Ordenamos para encontrar la variante con el precio más bajo
   const sortedVariants = [...variants].sort((a, b) => a.price - b.price)
   const cheapestVariant = sortedVariants[0]
-  
+
   const minPrice = cheapestVariant?.price || 0
   const hasMultipleSizes = variants.length > 1
 
@@ -42,27 +42,35 @@ export default function ProductCard({ product }) {
     localStorage.setItem('wishlist', JSON.stringify(updatedWishlist))
   }
 
+  const formatName = (name) => {
+    if (!name) return ""
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   return (
     <div className="group relative bg-white border border-stone-200 flex flex-col h-full hover:shadow-2xl transition-all duration-500 ease-out rounded-sm overflow-hidden">
-      
+
       {/* --- CONTENEDOR DE IMAGEN --- */}
       <div className="relative aspect-[3/4] overflow-hidden bg-stone-50">
         <Link to={`/product/${product.slug}`}>
-          <img 
-            src={product.image_url || '/images/no-image.jpg'} 
+          <img
+            src={product.image_url || '/images/no-image.jpg'}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
           />
         </Link>
 
         {/* BOTÓN WISHLIST */}
-        <button 
+        <button
           onClick={toggleWishlist}
-          className={`absolute top-3 right-3 lg:top-4 lg:right-4 p-2.5 rounded-full transition-all duration-300 z-10 ${
-            isWishlisted 
-              ? 'bg-stone-950 text-accent scale-110 shadow-lg opacity-100' 
+          className={`absolute top-3 right-3 lg:top-4 lg:right-4 p-2.5 rounded-full transition-all duration-300 z-10 ${isWishlisted
+              ? 'bg-stone-950 text-accent scale-110 shadow-lg opacity-100'
               : 'bg-white/90 text-stone-950 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:bg-stone-950 hover:text-white shadow-md'
-          }`}
+            }`}
         >
           <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={2} />
         </button>
@@ -79,11 +87,11 @@ export default function ProductCard({ product }) {
         <p className="text-accent text-[9px] lg:text-[11px] tracking-[0.3em] uppercase mb-1 lg:mb-2 font-black">
           {product.brand}
         </p>
-        
+
         <h3 className="font-serif text-base lg:text-xl text-stone-950 mb-1 lg:mb-2 line-clamp-2 leading-tight">
-          {product.name}
+          {formatName(product.name)}
         </h3>
-        
+
         <p className="text-stone-500 text-[8px] lg:text-[10px] tracking-widest uppercase mb-4 font-bold">
           {product.gender}
         </p>
@@ -109,7 +117,7 @@ export default function ProductCard({ product }) {
             </div>
           </div>
 
-          <Link 
+          <Link
             to={`/product/${product.slug}`}
             className="w-full py-3 lg:py-4 bg-stone-950 text-[#F6F4F0] text-[9px] lg:text-[11px] tracking-[0.2em] uppercase font-black hover:bg-stone-800 transition-all duration-300 shadow-md"
           >
