@@ -125,8 +125,8 @@ export default function Hero() {
             </span>
           </div>
 
-          <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(38px,11vw,52px)',fontWeight:300,lineHeight:1.08,color:'#1c1a17',marginBottom:'16px'}}>
-            Tu fragancia<br />convertida en<br />presencia.
+          <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(38px,11vw,52px)',fontWeight:250,lineHeight:1.08,color:'#1c1a17',marginBottom:'16px'}}>
+            TU FRAGANCIA<br />CONVERTIIDA EN<br />PRESENCIA.
           </h1>
 
           <p className="anim-fade-up-3" style={{fontSize:'13px',fontWeight:300,lineHeight:1.75,color:'#6b6560',marginBottom:'28px'}}>
@@ -188,8 +188,8 @@ export default function Hero() {
                   </span>
                 </div>
 
-                <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(36px,4vw,60px)',fontWeight:300,lineHeight:1.1,color:'#1c1a17',marginBottom:'24px'}}>
-                  Tu fragancia<br />convertida en<br />presencia.
+                <h1 className="hero-title anim-fade-up-2" style={{fontSize:'clamp(36px,4vw,60px)',fontWeight:250,lineHeight:1.1,color:'#1c1a17',marginBottom:'24px'}}>
+                  TU FRAGANCIA<br />CONVERTIDA EN<br />PRESENCIA.
                 </h1>
 
                 <p className="anim-fade-up-3" style={{fontSize:'16px',fontWeight:300,lineHeight:1.8,color:'#6b6560',maxWidth:'400px',marginBottom:'48px'}}>
