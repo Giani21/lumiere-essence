@@ -48,7 +48,7 @@ export default function Footer() {
           <div className="max-w-md space-y-4">
             <h3 className="font-serif text-3xl md:text-4xl text-stone-950 leading-tight">
               Unite a nuestro <br />
-              <span className="text-stone-800 italic">Club de Fragancias</span>
+              <span className="text-stone-800 italic">Club Lumiere</span>
             </h3>
             <p className="text-stone-900 text-xs lg:text-sm tracking-wide font-bold">
               Recibí acceso anticipado a nuevos ingresos y beneficios exclusivos.
