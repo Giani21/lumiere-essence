@@ -136,7 +136,7 @@ export default function Hero() {
           }}>
             TU FRAGANCIA<br />
             CONVERTIDA EN<br />
-            <span style={{ fontStyle: 'italic' }}>PRESENCIA.</span>
+            <span style={{ fontStyle: 'bold' }}>PRESENCIA.</span>
           </h1>
 
           <p className="anim-fade-up-3" style={{ fontSize: '13px', fontWeight: 300, lineHeight: 1.75, color: '#6b6560', marginBottom: '28px' }}>
@@ -208,7 +208,7 @@ export default function Hero() {
                 }}>
                   TU FRAGANCIA<br />
                   CONVERTIDA EN<br />
-                  <span style={{ fontStyle: 'italic', fontWeight: 300 }}>PRESENCIA.</span>
+                  <span style={{ fontStyle: 'bold', fontWeight: 300 }}>PRESENCIA.</span>
                 </h1>
 
                 <p className="anim-fade-up-3" style={{ fontSize: '16px', fontWeight: 300, lineHeight: 1.8, color: '#6b6560', maxWidth: '400px', marginBottom: '48px' }}>
