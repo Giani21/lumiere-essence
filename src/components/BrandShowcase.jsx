@@ -62,7 +62,7 @@ export default function BrandShowcase() {
   const lastX = useRef(0)
   const lastTime = useRef(0)
 
-  const SPEED_AUTO = 0.6 // Velocidad cuando nadie toca nada
+  const SPEED_AUTO = 1.4 // Velocidad cuando nadie toca nada
   const totalOriginal = useRef(0)
 
   const clampLoop = useCallback(() => {
