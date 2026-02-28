@@ -96,7 +96,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-stone-900 text-xs leading-relaxed font-bold pr-4">
-              La boutique multimarca definitiva. Encuentra las mejores fragancias nacionales para tu identidad única.
+              Tienda boutique multimarca. Las mejores fragancias nacionales para quienes eligen marcar la diferencia con lo nuestro.
             </p>
           </div>
 
