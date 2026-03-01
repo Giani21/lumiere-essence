@@ -53,7 +53,7 @@ export default function Catalog() {
             try {
                 const { data, error } = await supabase
                     .from('products')
-                    .select(`*, product_variants ( price, size_ml, stock )`)
+                    .select(`*, product_variants ( id, price, size_ml, stock )`)
                     .eq('is_active', true)
                     .order('created_at', { ascending: false })
                 if (error) throw error

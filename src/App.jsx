@@ -55,6 +55,17 @@ const PublicLayout = () => {
   )
 }
 
+const NoFooterLayout = () => {
+  return (
+    <>
+      <Navbar />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+    </>
+  )
+}
+
 const SimpleLayout = () => {
   return (
     <main className="flex-grow flex flex-col justify-center min-h-[80vh]">
@@ -88,7 +99,6 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/orders" element={<Orders />} />
             
@@ -97,6 +107,11 @@ function App() {
             <Route path="/legal/privacy" element={<Privacy />} />
             <Route path="/legal/returns" element={<Returns />} />
             <Route path="/legal/faq" element={<FAQ />} />
+          </Route>
+
+          {/* === ZONA 1.5: PÚBLICA (Con Navbar, SIN Footer) === */}
+          <Route element={<NoFooterLayout />}>
+            <Route path="/cart" element={<Cart />} />
           </Route>
 
           {/* Checkout */}
