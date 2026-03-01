@@ -6,15 +6,11 @@ import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, ShieldCheck, ShoppingCart,
 
 // --- SUBCOMPONENTE: Tarjeta de Recomendación con Selector de Tamaño ---
 function RelatedProductCard({ product, addToCart }) {
-  // 1. Ordenamos de menor a mayor tamaño para que los botones queden lógicos (ej: 50ml, 100ml)
   const sortedVariants = [...product.product_variants].sort((a, b) => a.size_ml - b.size_ml);
-  
-  // 2. Seleccionamos POR DEFECTO el último elemento del array (el de mayor tamaño)
   const [selectedVariant, setSelectedVariant] = useState(sortedVariants[sortedVariants.length - 1]);
   const [isAdding, setIsAdding] = useState(false);
 
   const handleQuickAdd = (e) => {
-    // 3. PREVENIMOS EL DOBLE CLIC (Propagación de eventos)
     e.preventDefault();
     e.stopPropagation();
     
@@ -55,7 +51,7 @@ function RelatedProductCard({ product, addToCart }) {
               key={variant.id}
               onClick={(e) => { 
                 e.preventDefault(); 
-                e.stopPropagation(); // Evitamos que el clic propague al Link
+                e.stopPropagation(); 
                 setSelectedVariant(variant); 
               }}
               className={`px-2 py-1 text-[8px] tracking-widest uppercase font-bold rounded-sm transition-colors border ${
@@ -90,7 +86,6 @@ function RelatedProductCard({ product, addToCart }) {
     </div>
   )
 }
-
 
 // --- COMPONENTE PRINCIPAL ---
 export default function Cart() {
@@ -148,6 +143,26 @@ export default function Cart() {
 
     fetchRelatedProducts();
   }, [cart]);
+
+  // AUTO-SCROLL PARA CELULARES
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024;
+    if (!isMobile || relatedProducts.length === 0) return;
+
+    const interval = setInterval(() => {
+      if (carouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        // Si llegó al final del scroll, vuelve al principio suavemente
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          carouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          carouselRef.current.scrollBy({ left: 210, behavior: 'smooth' }); // Ancho aprox de la tarjeta móvil
+        }
+      }
+    }, 3500); // Cambia cada 3.5 segundos
+
+    return () => clearInterval(interval);
+  }, [relatedProducts]);
 
   // Controles del carrusel para Desktop
   const scrollCarousel = (direction) => {
@@ -263,10 +278,13 @@ export default function Cart() {
               ))}
             </div>
 
-            {/* --- SEGUIR COMPRANDO --- */}
-            <div className="mt-8 flex justify-center lg:justify-start ml-2">
-              <Link to="/catalog" className="text-accent text-[10px] tracking-[0.3em] uppercase font-bold hover:text-stone-800 transition-colors border-b border-accent/30 hover:border-stone-800 pb-1">
-                + Seguir Comprando
+            {/* --- SEGUIR COMPRANDO (Transformado en Botón) --- */}
+            <div className="mt-8">
+              <Link 
+                to="/catalog" 
+                className="block lg:inline-block w-full lg:w-auto text-center px-8 py-4 border border-gray-200 text-gray-500 rounded-lg hover:border-stone-900 hover:text-stone-900 hover:shadow-md transition-all text-[10px] tracking-[0.3em] uppercase font-bold bg-white shadow-sm"
+              >
+                ← Seguir Comprando
               </Link>
             </div>
 
