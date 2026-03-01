@@ -64,8 +64,11 @@ export default function Navbar() {
     setIsOpen(false);
   }
 
+  // --- CORRECCIÓN AQUÍ ---
   const handleBrandClick = (brand) => {
-    navigate(`/catalog?search=${encodeURIComponent(brand)}`);
+    // Usamos 'brand=' en lugar de 'search=' para que coincida exacto con tu filtro
+    // Esto limpia cualquier otra cosa en la URL y busca solo esa marca
+    navigate(`/catalog?brand=${encodeURIComponent(brand)}`);
     setIsOpen(false);
     setIsBrandsOpen(false);
   }
@@ -91,7 +94,7 @@ export default function Navbar() {
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-20 md:h-24">
 
-            {/* LOGO - Actualizado a LogoLumiere.png sin círculo */}
+            {/* LOGO */}
             <div className="flex items-center w-auto max-w-[200px] md:max-w-[280px]">
               <Link to="/">
                 <img

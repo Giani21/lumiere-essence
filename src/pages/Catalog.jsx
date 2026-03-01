@@ -16,7 +16,7 @@ export default function Catalog() {
     const [isFilterOpen, setIsFilterOpen] = useState(false)
     const [isBrandOpen, setIsBrandOpen] = useState(false)
 
-    // --- MEJORA 1: Inicializar los estados leyendo directamente la URL ---
+    // --- Inicializar los estados leyendo directamente la URL ---
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
     const [selectedBrand, setSelectedBrand] = useState(searchParams.get('brand') || 'Todas')
     const [selectedGender, setSelectedGender] = useState(searchParams.get('gender') || 'Todas')
@@ -32,7 +32,18 @@ export default function Catalog() {
     const types = ['Todas', 'Eau de Parfum', 'Eau de Toilette', 'Parfum', 'Extrait de Parfum', 'Colonia', 'Body Splash', 'Set de Regalos']
     const families = ['Todas', 'Oriental', 'Frutal', 'Floral', 'Amaderado', 'Cítrico']
 
-    // --- MEJORA 2: Sincronizar automáticamente cualquier cambio a la URL ---
+    // --- NUEVO: Sincronizar el estado local cuando la URL cambia desde afuera (ej: Navbar) ---
+    useEffect(() => {
+        const urlBrand = searchParams.get('brand') || 'Todas';
+        const urlSearch = searchParams.get('search') || '';
+        const urlGender = searchParams.get('gender') || 'Todas';
+
+        if (urlBrand !== selectedBrand) setSelectedBrand(urlBrand);
+        if (urlSearch !== searchQuery) setSearchQuery(urlSearch);
+        if (urlGender !== selectedGender) setSelectedGender(urlGender);
+    }, [searchParams]);
+
+    // --- Sincronizar automáticamente cualquier cambio de los filtros a la URL ---
     useEffect(() => {
         const params = new URLSearchParams()
         
@@ -43,8 +54,7 @@ export default function Catalog() {
         if (selectedFamily !== 'Todas') params.set('family', selectedFamily)
         if (priceRange !== Infinity) params.set('price', priceRange.toString())
 
-        // Usamos { replace: true } para que cambiar de filtro no te llene el historial del navegador 
-        // (así el botón "Atrás" del celular sigue funcionando bien)
+        // Usamos { replace: true } para no llenar el historial de navegación
         setSearchParams(params, { replace: true })
     }, [searchQuery, selectedBrand, selectedGender, selectedType, selectedFamily, priceRange, setSearchParams])
 
