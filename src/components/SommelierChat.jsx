@@ -35,7 +35,7 @@ export default function SommelierChat() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session)
       // Si el usuario cierra sesión, cerramos el chat para activar el Auth Wall
-      if (!session) setIsOpen(false) 
+      if (!session) setIsOpen(false)
     })
 
     return () => subscription.unsubscribe()
@@ -45,8 +45,8 @@ export default function SommelierChat() {
   useEffect(() => {
     const event = new CustomEvent('chat-status-change', { detail: { isOpen } });
     window.dispatchEvent(event);
-  
-    if (window.innerWidth < 1024) { 
+
+    if (window.innerWidth < 1024) {
       document.body.style.overflow = isOpen ? 'hidden' : 'unset';
     }
   }, [isOpen]);
@@ -219,8 +219,13 @@ export default function SommelierChat() {
                 <div className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full shrink-0 flex items-center justify-center overflow-hidden border ${msg.role === 'user' ? 'bg-gray-100 border-transparent' : 'bg-white border-gray-100'}`}>
                   {msg.role === 'user' ? <User size={14} className="text-gray-400" /> : <img src="/images/Logo.png" alt="L" className="w-full h-full object-cover" />}
                 </div>
-                <div className={`px-4 py-3 text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-primary text-white rounded-2xl rounded-tr-none font-light' : 'bg-[#F9F9F9] text-gray-700 rounded-2xl rounded-tl-none border border-gray-100'}`}>
-                  <ReactMarkdown className="prose prose-sm">{msg.content}</ReactMarkdown>
+                <div className={`px-4 py-3 text-sm leading-relaxed shadow-sm ${msg.role === 'user'
+                    ? 'bg-primary text-white rounded-2xl rounded-tr-none font-light'
+                    : 'bg-[#F9F9F9] text-gray-700 rounded-2xl rounded-tl-none border border-gray-100'
+                  } prose prose-sm`}> {/* <--- Agregamos aquí las clases de markdown */}
+
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+
                 </div>
               </div>
               {msg.recommendations?.length > 0 && (
